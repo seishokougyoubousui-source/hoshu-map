@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="補修図面">
+<meta name="theme-color" content="#1a1a2e">
+<link rel="manifest" href="manifest.json">
+<title>補修図面アプリ</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+button{touch-action:manipulation;}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:#0f0f1a;height:100dvh;display:flex;flex-direction:column;overflow:hidden;color:white;}
+
+/* ===== 現場選択画面 ===== */
+#projectScreen{position:fixed;inset:0;background:#0f0f1a;z-index:2000;display:flex;flex-direction:column;touch-action:manipulation;}
+.ps-header{background:#1a1a2e;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2a4a;}
+.ps-header h2{font-size:17px;font-weight:800;color:white;}
+.ps-header h2 span{color:#f5a623;}
+.ps-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.ps-empty{color:#555;text-align:center;padding:48px 20px;font-size:14px;line-height:2;}
+.ps-card{background:#1a1a2e;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;touch-action:manipulation;}
+.ps-card:active{border-color:#f5a623;}
+.ps-icon{font-size:26px;flex-shrink:0;}
+.ps-info{flex:1;min-width:0;}
+.ps-name{font-size:15px;font-weight:700;}
+.ps-meta{color:#888;font-size:11px;margin-top:3px;}
+.ps-del{padding:6px 10px;border:none;border-radius:8px;background:#2a1a1a;color:#f88;font-size:12px;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
+.ps-new{margin:0 14px 16px;padding:14px;background:#f5a623;color:#1a1a1a;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
+
+/* ===== メインアプリ ===== */
+header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #2a2a4a;min-height:46px;}
+.hd-left{display:flex;align-items:center;gap:8px;}
+.hd-title{font-size:13px;font-weight:800;color:white;}
+.hd-title span{color:#f5a623;}
+.proj-badge{background:#2a2a4a;color:#f5a623;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:pointer;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.menu-btn{background:#2a2a4a;color:white;border:none;border-radius:8px;font-size:18px;padding:6px 12px;cursor:pointer;}
+
+/* ドロップダウン */
+#dropMenu{display:none;position:fixed;top:48px;right:10px;background:#1c1c2e;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:500;min-width:190px;overflow:hidden;}
+.dm-btn{width:100%;padding:13px 18px;border:none;background:transparent;color:white;font-size:14px;text-align:left;cursor:pointer;border-bottom:1px solid #2a2a4a;}
+.dm-btn:last-child{border-bottom:none;}
+.dm-btn:active{background:#2a2a4a;}
+#menuOverlay{display:none;position:fixed;inset:0;z-index:499;}
+
+/* 図面タブバー */
+.sheet-bar{background:#16213e;display:flex;align-items:center;height:34px;flex-shrink:0;overflow-x:auto;overflow-y:hidden;gap:2px;padding:0 4px;border-bottom:1px solid #2a2a4a;}
+.sheet-bar::-webkit-scrollbar{height:3px;}
+.sheet-bar::-webkit-scrollbar-thumb{background:#444;border-radius:2px;}
+.s-tab{display:flex;align-items:center;gap:4px;padding:3px 9px;border:none;border-radius:5px;background:transparent;color:#777;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.s-tab.active{background:#2a2a4a;color:white;}
+.s-tab .sx{font-size:12px;color:#666;margin-left:2px;}
+.s-tab.active .sx{color:#aaa;}
+.s-add{padding:3px 10px;border:none;border-radius:5px;background:transparent;color:#f5a623;font-size:18px;cursor:pointer;flex-shrink:0;}
+
+/* インジケーター */
+.indicator{display:flex;align-items:center;gap:6px;padding:5px 12px;background:#16213e;font-size:11px;color:#ccc;flex-shrink:0;border-bottom:1px solid #2a2a4a;min-height:32px;}
+.ind-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+/* メインエリア */
+.main{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+/* 左サイドバー */
+.sidebar{width:100px;background:#16213e;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #2a2a4a;overflow-y:auto;}
+.sb-btn{width:100%;padding:14px 6px;border:none;background:transparent;color:#777;font-size:10px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;border-bottom:1px solid #2a2a4a;transition:all .15s;position:relative;}
+.sb-btn .sb-icon{font-size:22px;}
+.sb-btn.active{background:#2a2a4a;color:#f5a623;}
+.sb-btn.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#f5a623;border-radius:0 3px 3px 0;}
+.badge-dot{position:absolute;top:8px;right:14px;background:#e94560;color:white;font-size:8px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;}
+.badge-dot.show{display:flex;}
+
+/* キャンバスエリア */
+.canvas-area{flex:1;position:relative;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:0;}
+.upload-hint{position:absolute;display:flex;flex-direction:column;align-items:center;gap:14px;color:#555;z-index:3;pointer-events:none;text-align:center;}
+.upload-hint .uh-icon{font-size:56px;}
+.upload-hint p{font-size:15px;line-height:1.8;}
+.canvas-container{position:relative;box-shadow:0 8px 40px rgba(0,0,0,.5);flex-shrink:0;}
+#bgCanvas,#markerCanvas{position:absolute;top:0;left:0;display:block;}
+#bgCanvas{z-index:1;}
+#markerCanvas{z-index:2;cursor:crosshair;}
+
+/* ドロワー */
+.drawer{position:fixed;top:0;bottom:0;left:100px;width:210px;background:#16213e;z-index:150;transform:translateX(-320px);transition:transform .28s cubic-bezier(.34,1.56,.64,1);overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.4);border-right:1px solid #2a2a4a;}
+.drawer.open{transform:translateX(0);}
+.drawer-overlay{position:fixed;top:0;bottom:0;left:100px;right:0;background:rgba(0,0,0,.3);z-index:140;display:none;}
+.drawer-overlay.show{display:block;}
+.dw-content{padding:14px 12px 24px;}
+.dw-title{font-size:10px;font-weight:700;color:#888;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #2a2a4a;}
+
+/* 不具合ボタン */
+.defect-grid{display:flex;flex-direction:column;gap:7px;}
+.def-btn{width:100%;padding:11px 10px;border:2px solid transparent;border-radius:10px;background:#2a2a4a;color:white;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;text-align:left;transition:all .15s;}
+.def-btn:active,.def-btn.active{border-color:currentColor;background:#3a3a5a;}
+.def-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
+
+/* 集計 */
+.count-list{display:flex;flex-direction:column;gap:7px;}
+.count-card{background:#111128;border-radius:9px;padding:10px 11px;}
+.count-card-header{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.count-dot{width:10px;height:10px;border-radius:50%;}
+.count-label{font-size:11px;color:#bbb;flex:1;}
+.count-val{font-size:15px;font-weight:700;color:white;padding-left:16px;}
+.action-row{display:flex;gap:8px;margin-top:12px;}
+.act-btn{flex:1;padding:11px;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-undo{background:#3a3a5a;color:#ddd;}
+.btn-clear{background:#4a1a2a;color:#f88;}
+
+/* ポップアップ */
+.popup{position:fixed;background:white;border-radius:18px;padding:18px;box-shadow:0 8px 40px rgba(0,0,0,.35);z-index:300;width:min(400px,90vw);left:50%;top:50%;transform:translate(-50%,-50%);display:none;color:#1a1a2e;}
+.popup h4{font-size:15px;font-weight:700;margin-bottom:12px;}
+.pf-label{font-size:10px;font-weight:700;color:#888;letter-spacing:.05em;margin-bottom:4px;}
+.pf-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
+.pf-row input,.pf-row select,.pf-row textarea{width:100%;padding:9px 11px;border:1.5px solid #ddd;border-radius:9px;font-size:15px;font-family:inherit;background:#fafafa;}
+.pf-row input:focus,.pf-row select:focus,.pf-row textarea:focus{outline:none;border-color:#1a1a2e;background:white;}
+.pf-row textarea{height:52px;resize:none;font-size:13px;}
+.unit-lbl{font-size:12px;color:#888;white-space:nowrap;padding:0 4px;}
+.popup-btns{display:flex;gap:8px;margin-top:12px;}
+.pb-cancel{flex:1;padding:11px;background:#eee;color:#666;border:none;border-radius:10px;font-size:13px;cursor:pointer;}
+.pb-del{flex:1;padding:11px;background:#fde;color:#c00;border:none;border-radius:10px;font-size:13px;cursor:pointer;display:none;}
+.pb-save{flex:1;padding:11px;background:#1a1a2e;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* レポートモーダル */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:white;border-radius:18px;padding:22px;width:92%;max-width:640px;max-height:88vh;overflow-y:auto;color:#1a1a2e;}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1a1a2e;}
+.rep-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.rep-tab{flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.rep-tab.active{background:#1a1a2e;color:white;}
+.rep-tab:not(.active){background:#eee;color:#555;}
+.rep-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;}
+.rep-table th{background:#1a1a2e;color:white;padding:9px 10px;text-align:left;font-size:11px;}
+.rep-table td{padding:9px 10px;border-bottom:1px solid #eee;}
+.rep-table tr:nth-child(even) td{background:#f8f8f8;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+.mb-btn{padding:10px 18px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
+.mb-close{background:#eee;color:#555;}
+.mb-png{background:#27ae60;color:white;}
+.mb-print{background:#1a1a2e;color:white;}
+.mb-rpt{background:#2980b9;color:white;}
+.badge{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;}
+
+/* ズームコントロール */
+.zoom-ctrl{display:flex;align-items:center;gap:4px;margin-left:auto;}
+.zc-btn{padding:2px 8px;border:none;border-radius:6px;background:#2a2a4a;color:#ccc;font-size:13px;cursor:pointer;}
+.zc-slider{width:60px;height:4px;accent-color:#f5a623;}
+.zc-label{font-size:10px;color:#888;min-width:34px;}
+.mode-btn{padding:3px 9px;border-radius:18px;border:none;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.reset-btn{padding:3px 7px;border-radius:18px;border:none;font-size:10px;font-weight:700;cursor:pointer;background:#3a3a5a;color:#ccc;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- ===== 現場選択画面 ===== -->
+<div id="projectScreen">
+  <div class="ps-header">
+    <h2>補修図面 <span>現場一覧</span></h2>
+  </div>
+  <div class="ps-list" id="psList"></div>
+  <button class="ps-new" onclick="openNewProjectModal()">＋ 新しい現場を追加</button>
+
+<!-- 現場名入力モーダル -->
+<div id="newProjModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;align-items:center;justify-content:center;">
+  <div style="background:#1a1a2e;border-radius:18px;padding:24px;width:min(360px,88vw);">
+    <p style="font-size:15px;font-weight:700;margin-bottom:14px;color:white;">現場名を入力</p>
+    <input id="newProjName" type="text" placeholder="例）〇〇マンション外壁補修"
+      style="width:100%;padding:12px 14px;border-radius:10px;border:none;font-size:15px;font-family:inherit;background:#2a2a4a;color:white;margin-bottom:14px;"
+      onkeydown="if(event.key==='Enter')confirmNewProject()">
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeNewProjectModal()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;touch-action:manipulation;">キャンセル</button>
+      <button onclick="confirmNewProject()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">作成</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== メインアプリ ===== -->
+<header>
+  <div class="hd-left">
+    <span class="hd-title">補修図面 <span>M</span></span>
+    <span class="proj-badge" id="projBadge" onclick="openProjectScreen()">現場</span>
+  </div>
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
+</header>
+
+<!-- ドロップダウン -->
+<div id="dropMenu">
+  <button class="dm-btn" onclick="document.getElementById('fileInput').click();closeMenu()">📂 図面を追加</button>
+  <button class="dm-btn" onclick="savePNG();closeMenu()">⬇️ PNG保存</button>
+  <button class="dm-btn" onclick="printDrawing();closeMenu()">🖨 図面印刷</button>
+  <button class="dm-btn" onclick="showReport();closeMenu()">📋 レポート</button>
+</div>
+<div id="menuOverlay" onclick="closeMenu()"></div>
+<input type="file" id="fileInput" accept="image/*,application/pdf" onchange="loadFile(event)">
+
+<!-- 図面タブバー -->
+<div class="sheet-bar" id="sheetBar">
+  <button class="s-add" onclick="document.getElementById('fileInput').click()" title="図面を追加">＋</button>
+</div>
+
+<!-- インジケーター -->
+<div class="indicator" id="indicator">
+  <div class="ind-dot" id="indDot" style="background:#27ae60"></div>
+  <span id="indType">ひび割れ</span>
+  <button class="mode-btn" id="modeBtn" onclick="toggleMode()" style="background:#27ae60;color:white;">✏️ マーキング</button>
+  <div class="zoom-ctrl">
+    <button class="zc-btn" onclick="changeZoom(-.15)">−</button>
+    <input class="zc-slider" type="range" id="zoomSlider" min=".1" max="5" step=".05" value="1" oninput="viewScale=+this.value;applyTransform()">
+    <button class="zc-btn" onclick="changeZoom(.15)">＋</button>
+    <span class="zc-label" id="zoomLbl">100%</span>
+    <button class="reset-btn" onclick="resetView()">🔄</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- サイドバー -->
+  <div class="sidebar">
+    <button class="sb-btn active" id="sb-defect" onclick="toggleDrawer('dwDefect','sb-defect')">
+      <span class="sb-icon">🔍</span>種別
+    </button>
+    <button class="sb-btn" id="sb-count" onclick="toggleDrawer('dwCount','sb-count')">
+      <span class="sb-icon">📊</span>集計
+      <span class="badge-dot" id="totalBadge">0</span>
+    </button>
+  </div>
+
+  <!-- キャンバス -->
+  <div class="canvas-area" id="canvasArea">
+    <div class="upload-hint" id="uploadHint">
+      <div class="uh-icon">🏗️</div>
+      <p>図面を開く から<br>画像を追加してください</p>
+    </div>
+    <div class="canvas-container" id="canvasContainer" style="width:400px;height:300px;">
+      <canvas id="bgCanvas" width="400" height="300"></canvas>
+      <canvas id="markerCanvas" width="400" height="300"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ドロワーオーバーレイ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeAllDrawers()"></div>
+
+<!-- 種別ドロワー -->
+<div class="drawer" id="dwDefect">
+  <div class="dw-content">
+    <div class="dw-title">不具合種別</div>
+    <div class="defect-grid" id="defectGrid"></div>
+  </div>
+</div>
+
+<!-- 集計ドロワー -->
+<div class="drawer" id="dwCount">
+  <div class="dw-content">
+    <div class="dw-title">集計</div>
+    <div class="count-list" id="countList"></div>
+    <div class="action-row">
+      <button class="act-btn btn-undo" onclick="undoLast()">↩ 戻す</button>
+      <button class="act-btn btn-clear" onclick="clearAll()">🗑 全削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 入力ポップアップ -->
+<div class="popup" id="popup">
+  <h4 id="popTitle">📝 補修箇所</h4>
+  <div id="typeSelectWrap" style="display:none;margin-bottom:10px;">
+    <div class="pf-label">種別変更</div>
+    <div class="pf-row"><select id="editTypeSelect" onchange="onEditTypeChange()"></select></div>
+  </div>
+  <div class="pf-label" id="valLabel">数量</div>
+  <div class="pf-row">
+    <input type="number" id="valInput" min="0" step="0.01" placeholder="0">
+    <span class="unit-lbl" id="unitLbl">—</span>
+  </div>
+  <div class="pf-label">メモ（任意）</div>
+  <div class="pf-row"><textarea id="memoInput" placeholder="備考など"></textarea></div>
+  <div class="popup-btns">
+    <button class="pb-del" id="delBtn" onclick="deleteMark()">🗑 削除</button>
+    <button class="pb-cancel" onclick="cancelMark()">キャンセル</button>
+    <button class="pb-save" onclick="saveMark()">保存</button>
+  </div>
+</div>
+
+<!-- レポートモーダル -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="repTitle">📋 レポート</h2>
+    <div class="rep-tabs">
+      <button class="rep-tab active" id="repTabCur" onclick="showReport('current')">📄 現在の図面</button>
+      <button class="rep-tab" id="repTabAll" onclick="showReport('all')">📊 全図面合計</button>
+    </div>
+    <table class="rep-table">
+      <thead><tr><th>種別</th><th style="text-align:right">数量</th><th style="text-align:right">メモ</th></tr></thead>
+      <tbody id="repBody"></tbody>
+    </table>
+    <div class="modal-btns">
+      <button class="mb-btn mb-close" onclick="closeReport()">閉じる</button>
+      <button class="mb-btn mb-png" onclick="savePNG()">⬇️ PNG</button>
+      <button class="mb-btn mb-print" onclick="printDrawing()">🖨 図面</button>
+      <button class="mb-btn mb-rpt" onclick="window.print()">🖨 レポート</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 定数 =====
+const DEFECTS = {
+  crack: { label:'ひび割れ',   color:'#27ae60', shape:'wave',     unit:'m',   unitLabel:'m' },
+  peel:  { label:'剥離・浮き', color:'#e94560', shape:'circle',   unit:'m2',  unitLabel:'㎡' },
+  burst: { label:'欠損・爆裂', color:'#2980b9', shape:'triangle', unit:'pc',  unitLabel:'箇所' },
+  float: { label:'タイル浮き', color:'#8e44ad', shape:'rect',     unit:'m2',  unitLabel:'㎡' },
+  tile:  { label:'タイル貼替', color:'#e67e22', shape:'rect',     unit:'mai', unitLabel:'枚' },
+  other: { label:'その他',     color:'#7f8c8d', shape:'circle',   unit:'pc',  unitLabel:'箇所' },
+};
+
+// ===== 状態 =====
+let currentType = 'crack';
+let markers = [];
+let pendingMark = null;
+let editingIdx = null;
+let imageLoaded = false;
+let mode = 'mark';
+let viewX=0, viewY=0, viewScale=1, viewAngle=0;
+let sheets = [];
+let currentSheetIdx = -1;
+let currentProjectId = null;
+
+const bgCanvas = document.getElementById('bgCanvas');
+const markerCanvas = document.getElementById('markerCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+const mCtx = markerCanvas.getContext('2d');
+const container = document.getElementById('canvasContainer');
+
+// ===== 種別ボタン生成 =====
+(function buildDefectBtns(){
+  const grid = document.getElementById('defectGrid');
+  const sel = document.getElementById('editTypeSelect');
+  Object.entries(DEFECTS).forEach(([k,d])=>{
+    const icons = {wave:'〰',circle:'⭕',triangle:'△',rect:'⬜'};
+    const ic = icons[d.shape]||'○';
+    const btn = document.createElement('button');
+    btn.className='def-btn'+(k==='crack'?' active':'');
+    btn.dataset.type=k;
+    btn.innerHTML=`<div class="def-dot" style="background:${d.color}"></div>${d.label}${ic}`;
+    btn.onclick=()=>selectDefect(k);
+    grid.appendChild(btn);
+    const opt=document.createElement('option');
+    opt.value=k; opt.textContent=d.label+ic;
+    sel.appendChild(opt);
+  });
+})();
+
+// ===== 現場管理 =====
+function loadProjects(){try{return JSON.parse(localStorage.getItem('hp_projects')||'[]');}catch{return[];}}
+function saveProjects(p){try{localStorage.setItem('hp_projects',JSON.stringify(p));}catch{alert('保存容量不足');}}
+function loadProjData(id){try{return JSON.parse(localStorage.getItem('hp_'+id)||'null');}catch{return null;}}
+function saveProjData(id,data){
+  // 画像データを除いたマーカーのみ保存（容量節約）
+  const lite={sheets:data.sheets.map(s=>({name:s.name,markers:s.markers})),currentSheetIdx:data.currentSheetIdx};
+  try{localStorage.setItem('hp_'+id,JSON.stringify(lite));}catch{alert('保存容量不足。PNG保存でデータを書き出してください。');}
+}
+
+function renderProjectList(){
+  const projects=loadProjects();
+  const list=document.getElementById('psList');
+  list.innerHTML='';
+  if(projects.length===0){
+    list.innerHTML='<div class="ps-empty">現場がまだありません<br>下の「＋」ボタンから追加してください</div>';
+    return;
+  }
+  projects.forEach(p=>{
+    const data=loadProjData(p.id);
+    const sc=data?.sheets?.length||0;
+    const mc=data?.sheets?.reduce((s,sh)=>s+(sh.markers?.length||0),0)||0;
+    const card=document.createElement('div');
+    card.className='ps-card';
+    card.innerHTML=`<div class="ps-icon">🏗️</div><div class="ps-info"><div class="ps-name">${p.name}</div><div class="ps-meta">図面 ${sc}枚 ｜ マーキング ${mc}件 ｜ ${p.date}</div></div><button class="ps-del" onclick="event.stopPropagation();deleteProject('${p.id}')">削除</button>`;
+    card.onclick=()=>openProject(p.id);
+    list.appendChild(card);
+  });
+}
+
+function openNewProjectModal(){
+  document.getElementById('newProjName').value='';
+  document.getElementById('newProjModal').style.display='flex';
+  setTimeout(()=>document.getElementById('newProjName').focus(),100);
+}
+function closeNewProjectModal(){
+  document.getElementById('newProjModal').style.display='none';
+}
+function confirmNewProject(){
+  const name=document.getElementById('newProjName').value.trim();
+  if(!name){alert('現場名を入力してください');return;}
+  closeNewProjectModal();
+  createProject(name);
+}
+
+function createProject(name){
+  const id='p'+Date.now();
+  const projects=loadProjects();
+  projects.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});
+  saveProjects(projects);
+  saveProjData(id,{sheets:[],currentSheetIdx:-1});
+  openProject(id);
+}
+
+function openProject(id){
+  const projects=loadProjects();
+  const proj=projects.find(p=>p.id===id);
+  if(!proj)return;
+  currentProjectId=id;
+  document.getElementById('projBadge').textContent=proj.name;
+  document.getElementById('projectScreen').style.display='none';
+
+  const data=loadProjData(id)||{sheets:[],currentSheetIdx:-1};
+  // マーカーのみ復元（画像はなし→再読み込みが必要）
+  sheets=data.sheets.map(s=>({name:s.name,markers:s.markers||[],imageData:null}));
+  currentSheetIdx=data.currentSheetIdx;
+  markers=[];
+  imageLoaded=false;
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+  document.getElementById('uploadHint').style.display='flex';
+  renderSheetTabs();
+  updateCounts();
+}
+
+function deleteProject(id){
+  if(!confirm('この現場のデータをすべて削除しますか？'))return;
+  saveProjects(loadProjects().filter(p=>p.id!==id));
+  try{localStorage.removeItem('hp_'+id);}catch{}
+  if(currentProjectId===id){
+    currentProjectId=null;
+    sheets=[];currentSheetIdx=-1;markers=[];imageLoaded=false;
+    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+    mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+    document.getElementById('uploadHint').style.display='flex';
+    document.getElementById('projBadge').textContent='現場';
+  }
+  renderProjectList();
+}
+
+function openProjectScreen(){
+  saveCurrentProject();
+  renderProjectList();
+  document.getElementById('projectScreen').style.display='flex';
+}
+
+function saveCurrentProject(){
+  if(!currentProjectId)return;
+  // 現在のマーカーをシートに保存
+  if(currentSheetIdx>=0&&sheets[currentSheetIdx])
+    sheets[currentSheetIdx].markers=[...markers];
+  saveProjData(currentProjectId,{sheets,currentSheetIdx});
+  // 日付更新
+  const projects=loadProjects();
+  const proj=projects.find(p=>p.id===currentProjectId);
+  if(proj){proj.date=new Date().toLocaleDateString('ja-JP');saveProjects(projects);}
+}
+
+// 30秒自動保存
+setInterval(()=>{if(currentProjectId)saveCurrentProject();},30000);
+
+// ===== 図面（シート）管理 =====
+function renderSheetTabs(){
+  const bar=document.getElementById('sheetBar');
+  bar.innerHTML='';
+  sheets.forEach((s,i)=>{
+    const tab=document.createElement('button');
+    tab.className='s-tab'+(i===currentSheetIdx?' active':'');
+    tab.innerHTML=`📄 ${s.name} <span class="sx" onclick="event.stopPropagation();removeSheet(${i})">✕</span>`;
+    tab.onclick=()=>switchSheet(i);
+    bar.appendChild(tab);
+  });
+  const add=document.createElement('button');
+  add.className='s-add';add.textContent='＋';
+  add.onclick=()=>document.getElementById('fileInput').click();
+  bar.appendChild(add);
+}
+
+function saveCurrentSheet(){
+  if(currentSheetIdx>=0&&sheets[currentSheetIdx])
+    sheets[currentSheetIdx].markers=[...markers];
+}
+
+function switchSheet(idx){
+  saveCurrentSheet();
+  currentSheetIdx=idx;
+  const s=sheets[idx];
+  markers=[...(s.markers||[])];
+  // 画像がある場合は表示
+  if(s.imageData){
+    const img=new Image();
+    img.onload=()=>{
+      setCanvasSize(img.width,img.height);
+      bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
+      imageLoaded=true;
+      document.getElementById('uploadHint').style.display='none';
+      redraw();updateCounts();
+    };
+    img.src=s.imageData;
+  } else {
+    imageLoaded=false;
+    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+    mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+    document.getElementById('uploadHint').style.display='flex';
+    redraw();updateCounts();
+  }
+  renderSheetTabs();
+}
+
+function removeSheet(idx){
+  if(!confirm('この図面を削除しますか？'))return;
+  sheets.splice(idx,1);
+  if(sheets.length===0){
+    currentSheetIdx=-1;markers=[];imageLoaded=false;
+    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+    mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+    document.getElementById('uploadHint').style.display='flex';
+    renderSheetTabs();updateCounts();
+  } else {
+    currentSheetIdx=Math.min(currentSheetIdx,sheets.length-1);
+    switchSheet(currentSheetIdx);
+  }
+}
+
+// ===== ファイル読み込み =====
+function loadFile(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  e.target.value='';
+  // 現場未選択なら警告
+  if(!currentProjectId){alert('先に現場を選択してください');openProjectScreen();return;}
+  saveCurrentSheet();
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      setCanvasSize(img.width,img.height);
+      bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
+      imageLoaded=true;
+      document.getElementById('uploadHint').style.display='none';
+      // シートに追加
+      const name=file.name.replace(/\.[^/.]+$/,'').slice(0,14);
+      const imageData=bgCanvas.toDataURL('image/jpeg',.7);
+      sheets.push({name,imageData,markers:[]});
+      currentSheetIdx=sheets.length-1;
+      markers=[];
+      renderSheetTabs();
+      resetView();redraw();updateCounts();
+      saveCurrentProject();
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ===== キャンバスサイズ =====
+function setCanvasSize(iw,ih){
+  const area=document.getElementById('canvasArea');
+  const mw=area.clientWidth, mh=area.clientHeight;
+  const scale=Math.min(mw/iw,mh/ih);
+  const cw=Math.round(iw*scale), ch=Math.round(ih*scale);
+  bgCanvas.width=markerCanvas.width=cw;
+  bgCanvas.height=markerCanvas.height=ch;
+  bgCanvas.style.width=cw+'px'; bgCanvas.style.height=ch+'px';
+  markerCanvas.style.width=cw+'px'; markerCanvas.style.height=ch+'px';
+  container.style.width=cw+'px'; container.style.height=ch+'px';
+  bgCanvas.style.display='block';
+}
+
+// ===== 表示変換 =====
+function applyTransform(){
+  container.style.transform=`translate(${viewX}px,${viewY}px) scale(${viewScale}) rotate(${viewAngle}deg)`;
+  container.style.transformOrigin='center center';
+  document.getElementById('zoomLbl').textContent=Math.round(viewScale*100)+'%';
+  const sl=document.getElementById('zoomSlider');
+  if(sl)sl.value=viewScale;
+}
+function changeZoom(d){viewScale=Math.min(Math.max(viewScale+d,.1),5);applyTransform();}
+function resetView(){viewX=0;viewY=0;viewScale=1;viewAngle=0;applyTransform();}
+
+// ===== モード =====
+function toggleMode(){
+  mode=mode==='mark'?'move':'mark';
+  const btn=document.getElementById('modeBtn');
+  btn.textContent=mode==='mark'?'✏️ マーキング':'👆 移動';
+  btn.style.background=mode==='mark'?'#27ae60':'#e67e22';
+  markerCanvas.style.cursor=mode==='mark'?'crosshair':'grab';
+}
+
+// ===== タッチ操作 =====
+let t0=null,t1=null,startDist=0,startScale=1,startX=0,startY=0,startVX=0,startVY=0;
+let tapTime=0,tapMoved=false;
+let longTimer=null,dragIdx=null,isDrag=false;
+
+function getPos(cx,cy){
+  const r=markerCanvas.getBoundingClientRect();
+  return{x:(cx-r.left)*(markerCanvas.width/r.width),y:(cy-r.top)*(markerCanvas.height/r.height)};
+}
+function nearMarker(cx,cy){
+  const p=getPos(cx,cy);
+  for(let i=markers.length-1;i>=0;i--){
+    const m=markers[i];
+    if(Math.hypot(p.x-m.x,p.y-m.y)<16)return i;
+  }
+  return -1;
+}
+
+markerCanvas.addEventListener('touchstart',e=>{
+  e.preventDefault();tapTime=Date.now();tapMoved=false;isDrag=false;dragIdx=null;
+  if(e.touches.length===1){
+    t0=e.touches[0];startX=t0.clientX;startY=t0.clientY;startVX=viewX;startVY=viewY;
+    const idx=nearMarker(t0.clientX,t0.clientY);
+    if(idx!==-1){longTimer=setTimeout(()=>{dragIdx=idx;isDrag=true;if(navigator.vibrate)navigator.vibrate(30);},500);}
+  } else if(e.touches.length===2){
+    clearTimeout(longTimer);t0=e.touches[0];t1=e.touches[1];
+    startDist=Math.hypot(t1.clientX-t0.clientX,t1.clientY-t0.clientY);
+    startScale=viewScale;startVX=viewX;startVY=viewY;
+    startX=(t0.clientX+t1.clientX)/2;startY=(t0.clientY+t1.clientY)/2;
+  }
+},{passive:false});
+
+markerCanvas.addEventListener('touchmove',e=>{
+  e.preventDefault();tapMoved=true;clearTimeout(longTimer);
+  if(isDrag&&dragIdx!==null&&e.touches.length===1){
+    const p=getPos(e.touches[0].clientX,e.touches[0].clientY);
+    markers[dragIdx].x=p.x;markers[dragIdx].y=p.y;redraw();
+  } else if(e.touches.length===1&&mode==='move'){
+    viewX=startVX+(e.touches[0].clientX-startX);viewY=startVY+(e.touches[0].clientY-startY);applyTransform();
+  } else if(e.touches.length===2){
+    const tt0=e.touches[0],tt1=e.touches[1];
+    const dist=Math.hypot(tt1.clientX-tt0.clientX,tt1.clientY-tt0.clientY);
+    const cx=(tt0.clientX+tt1.clientX)/2,cy=(tt0.clientY+tt1.clientY)/2;
+    viewScale=Math.min(Math.max(startScale*(dist/startDist),.2),8);
+    viewX=startVX+(cx-startX);viewY=startVY+(cy-startY);applyTransform();
+  }
+},{passive:false});
+
+markerCanvas.addEventListener('touchend',e=>{
+  e.preventDefault();clearTimeout(longTimer);
+  if(isDrag){isDrag=false;dragIdx=null;saveCurrentProject();updateCounts();return;}
+  if(!tapMoved&&Date.now()-tapTime<250&&e.changedTouches.length===1&&mode==='mark'){
+    const tc=e.changedTouches[0];
+    onCanvasClick(tc.clientX,tc.clientY);
+  }
+  t0=null;t1=null;
+},{passive:false});
+
+markerCanvas.addEventListener('click',e=>{if(mode==='mark')onCanvasClick(e.clientX,e.clientY);});
+
+// ===== マーキング =====
+function onCanvasClick(cx,cy){
+  const idx=nearMarker(cx,cy);
+  if(idx!==-1){openEditPopup(idx);return;}
+  const p=getPos(cx,cy);
+  pendingMark={x:p.x,y:p.y,type:currentType,shape:DEFECTS[currentType].shape,value:null,memo:''};
+  editingIdx=null;
+  openPopup();
+}
+
+function openPopup(){
+  const d=DEFECTS[currentType];
+  document.getElementById('popTitle').textContent=`📝 ${d.label}`;
+  document.getElementById('valLabel').textContent=d.unitLabel;
+  document.getElementById('unitLbl').textContent=d.unitLabel;
+  document.getElementById('valInput').value='';
+  document.getElementById('valInput').step=(d.unit==='m'||d.unit==='m2')?'.01':'1';
+  document.getElementById('memoInput').value='';
+  document.getElementById('typeSelectWrap').style.display='none';
+  document.getElementById('delBtn').style.display='none';
+  document.getElementById('popup').style.display='block';
+  setTimeout(()=>document.getElementById('valInput').focus(),100);
+}
+
+function openEditPopup(idx){
+  const m=markers[idx];const d=DEFECTS[m.type];
+  editingIdx=idx;pendingMark=null;
+  document.getElementById('popTitle').textContent=`✏️ No.${idx+1} 編集`;
+  document.getElementById('valLabel').textContent=d.unitLabel;
+  document.getElementById('unitLbl').textContent=d.unitLabel;
+  document.getElementById('valInput').value=m.value??'';
+  document.getElementById('valInput').step=(d.unit==='m'||d.unit==='m2')?'.01':'1';
+  document.getElementById('memoInput').value=m.memo||'';
+  document.getElementById('typeSelectWrap').style.display='block';
+  document.getElementById('editTypeSelect').value=m.type;
+  document.getElementById('delBtn').style.display='block';
+  document.getElementById('popup').style.display='block';
+}
+
+function onEditTypeChange(){
+  const t=document.getElementById('editTypeSelect').value;
+  const d=DEFECTS[t];
+  document.getElementById('valLabel').textContent=d.unitLabel;
+  document.getElementById('unitLbl').textContent=d.unitLabel;
+  document.getElementById('valInput').step=(d.unit==='m'||d.unit==='m2')?'.01':'1';
+}
+
+function saveMark(){
+  const val=parseFloat(document.getElementById('valInput').value)||0;
+  const memo=document.getElementById('memoInput').value;
+  if(editingIdx!==null){
+    const t=document.getElementById('editTypeSelect').value;
+    const m=markers[editingIdx];
+    m.type=t;m.shape=DEFECTS[t].shape;m.value=val;m.memo=memo;
+    editingIdx=null;
+  } else if(pendingMark){
+    pendingMark.value=val;pendingMark.memo=memo;
+    markers.push(pendingMark);pendingMark=null;
+  }
+  document.getElementById('popup').style.display='none';
+  redraw();updateCounts();saveCurrentProject();
+}
+
+function cancelMark(){
+  pendingMark=null;editingIdx=null;
+  document.getElementById('popup').style.display='none';
+}
+
+function deleteMark(){
+  if(editingIdx===null)return;
+  if(confirm(`No.${editingIdx+1}を削除しますか？`)){
+    markers.splice(editingIdx,1);editingIdx=null;
+    document.getElementById('popup').style.display='none';
+    redraw();updateCounts();saveCurrentProject();
+  }
+}
+
+// ===== 描画 =====
+function redraw(){
+  mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+  markers.forEach(m=>drawMarker(m));
+}
+
+function drawMarker(m){
+  const{x,y,type,shape}=m;
+  const color=DEFECTS[type].color;
+  const val=m.value>0?( m.value%1===0?String(m.value):m.value.toFixed(1) ):'';
+  const fs=6;
+  mCtx.save();
+  mCtx.font=`bold ${fs}px sans-serif`;
+  mCtx.textAlign='center';mCtx.textBaseline='middle';
+  const tw=val?mCtx.measureText(val).width:0;
+
+  if(shape==='circle'){
+    const r=Math.max(5,tw/2+3);
+    mCtx.beginPath();mCtx.arc(x,y,r,0,Math.PI*2);mCtx.fillStyle=color;mCtx.fill();
+    if(val){mCtx.fillStyle='white';mCtx.fillText(val,x,y);}
+  } else if(shape==='wave'){
+    const ww=Math.max(12,tw+6),amp=2,steps=6,sw=ww/steps,sx=x-ww/2;
+    mCtx.beginPath();mCtx.moveTo(sx,y);
+    for(let i=0;i<steps;i++){mCtx.quadraticCurveTo(sx+sw*i+sw/2,y+(i%2===0?-amp:amp),sx+sw*(i+1),y);}
+    mCtx.strokeStyle=color;mCtx.lineWidth=1.2;mCtx.lineCap='round';mCtx.stroke();
+    if(val){mCtx.fillStyle=color;mCtx.fillText(val,x,y+amp+fs);}
+  } else if(shape==='rect'){
+    const rw=Math.max(10,tw+6),rh=fs+4;
+    mCtx.fillStyle=color;mCtx.beginPath();mCtx.roundRect(x-rw/2,y-rh/2,rw,rh,2);mCtx.fill();
+    if(val){mCtx.fillStyle='white';mCtx.fillText(val,x,y);}
+  } else if(shape==='triangle'){
+    const tr=Math.max(6,tw/2+4),th=tr*1.8;
+    mCtx.beginPath();mCtx.moveTo(x,y-th*.6);mCtx.lineTo(x+tr,y+th*.4);mCtx.lineTo(x-tr,y+th*.4);mCtx.closePath();
+    mCtx.fillStyle=color;mCtx.fill();
+    if(val){mCtx.fillStyle='white';mCtx.fillText(val,x,y+th*.08);}
+  }
+  mCtx.restore();
+}
+
+// ===== 種別選択 =====
+function selectDefect(type){
+  currentType=type;
+  document.querySelectorAll('.def-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));
+  const d=DEFECTS[type];
+  document.getElementById('indDot').style.background=d.color;
+  document.getElementById('indType').textContent=d.label;
+  closeAllDrawers();
+}
+
+// ===== 集計 =====
+function updateCounts(){
+  const stats={};
+  Object.keys(DEFECTS).forEach(k=>stats[k]={total:0,count:0});
+  markers.forEach(m=>{stats[m.type].count++;stats[m.type].total+=(m.value||0);});
+  const total=markers.length;
+  const badge=document.getElementById('totalBadge');
+  badge.textContent=total;badge.classList.toggle('show',total>0);
+  const list=document.getElementById('countList');list.innerHTML='';
+  Object.entries(DEFECTS).forEach(([k,d])=>{
+    const s=stats[k];if(s.count===0)return;
+    const ts=s.total>0?`${s.total%1===0?s.total:s.total.toFixed(2)}${d.unitLabel}`:`${s.count}件`;
+    list.innerHTML+=`<div class="count-card"><div class="count-card-header"><div class="count-dot" style="background:${d.color}"></div><span class="count-label">${d.label}</span><span style="color:#666;font-size:10px">${s.count}マーカー</span></div><div class="count-val">${ts}</div></div>`;
+  });
+  if(list.innerHTML==='')list.innerHTML='<div style="color:#555;font-size:12px;text-align:center;padding:14px">マーキングなし</div>';
+}
+
+// ===== 元に戻す/全削除 =====
+function undoLast(){if(!markers.length)return;markers.pop();redraw();updateCounts();saveCurrentProject();}
+function clearAll(){if(!markers.length)return;if(confirm(`全${markers.length}件削除しますか？`)){markers=[];redraw();updateCounts();saveCurrentProject();}}
+
+// ===== ドロワー =====
+let activeDrawer=null;
+function toggleDrawer(id,btnId){
+  const d=document.getElementById(id);
+  const isOpen=d.classList.contains('open');
+  closeAllDrawers(false);
+  if(!isOpen){
+    d.classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('show');
+    activeDrawer=id;
+    document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(btnId).classList.add('active');
+  }
+}
+function closeAllDrawers(resetBtn=true){
+  document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'));
+  document.getElementById('drawerOverlay').classList.remove('show');
+  activeDrawer=null;
+  if(resetBtn)document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+}
+
+// ===== メニュー =====
+function toggleMenu(){
+  const m=document.getElementById('dropMenu'),o=document.getElementById('menuOverlay');
+  const open=m.style.display==='block';
+  m.style.display=open?'none':'block';o.style.display=open?'none':'block';
+}
+function closeMenu(){document.getElementById('dropMenu').style.display='none';document.getElementById('menuOverlay').style.display='none';}
+
+// ===== 印刷・保存 =====
+function getMergedCanvas(){
+  const c=document.createElement('canvas');
+  c.width=bgCanvas.width;c.height=bgCanvas.height;
+  const ctx=c.getContext('2d');ctx.drawImage(bgCanvas,0,0);ctx.drawImage(markerCanvas,0,0);
+  return c;
+}
+function savePNG(){
+  if(!imageLoaded){alert('図面を読み込んでください');return;}
+  const a=document.createElement('a');a.href=getMergedCanvas().toDataURL('image/png');
+  a.download='hoshu_map.png';a.click();
+}
+function printDrawing(){
+  if(!imageLoaded){alert('図面を読み込んでください');return;}
+  const url=getMergedCanvas().toDataURL('image/png');
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>補修図面</title><style>*{margin:0;padding:0;}body{background:white;}img{max-width:100%;height:auto;display:block;}.nb{padding:10px;background:#1a1a2e;color:white;display:flex;gap:8px;align-items:center;}@media print{.nb{display:none;}}</style></head><body><div class="nb"><span style="font-size:14px;font-weight:700">補修図面</span><button onclick="window.print()" style="padding:6px 16px;background:#f5a623;border:none;border-radius:6px;font-weight:700;cursor:pointer;">🖨 印刷</button><a href="${url}" download="hoshu_map.png" style="padding:6px 16px;background:#27ae60;color:white;border-radius:6px;font-weight:700;text-decoration:none;">⬇️ PNG</a><button onclick="window.close()" style="padding:6px 12px;background:#444;color:white;border:none;border-radius:6px;cursor:pointer;">✕</button></div><img src="${url}"></body></html>`);
+  w.document.close();
+}
+
+// ===== レポート =====
+let repMode='current';
+function showReport(mode){
+  repMode=mode||'current';
+  saveCurrentProject();
+  document.getElementById('repTabCur').classList.toggle('active',repMode==='current');
+  document.getElementById('repTabAll').classList.toggle('active',repMode==='all');
+  const tbody=document.getElementById('repBody');tbody.innerHTML='';
+  if(repMode==='current'){
+    const sn=sheets[currentSheetIdx]?.name||'図面';
+    document.getElementById('repTitle').textContent=`📋 レポート｜${sn}`;
+    renderRepRows(tbody,markers);
+  } else {
+    document.getElementById('repTitle').textContent='📋 全図面合計';
+    const allStats={};
+    Object.keys(DEFECTS).forEach(k=>allStats[k]={total:0,memos:[],sheets:[]});
+    sheets.forEach((s,i)=>{
+      const ms=i===currentSheetIdx?markers:s.markers;
+      ms.forEach(m=>{
+        allStats[m.type].total+=(m.value||0);
+        if(m.memo)allStats[m.type].memos.push(m.memo);
+        if(!allStats[m.type].sheets.includes(s.name))allStats[m.type].sheets.push(s.name);
+      });
+    });
+    // 図面別内訳
+    let any=false;
+    sheets.forEach((s,i)=>{
+      const ms=i===currentSheetIdx?markers:s.markers;
+      if(!ms.length)return;any=true;
+      tbody.innerHTML+=`<tr><td colspan="3" style="background:#f0f0f0;font-weight:700;font-size:11px;padding:7px 10px;color:#333;">📄 ${s.name}</td></tr>`;
+      renderRepRows(tbody,ms);
+    });
+    // 合計
+    if(any){
+      tbody.innerHTML+=`<tr><td colspan="3" style="background:#1a1a2e;font-weight:700;font-size:11px;padding:7px 10px;color:white;">📊 合計</td></tr>`;
+      Object.entries(DEFECTS).forEach(([k,d])=>{
+        const s=allStats[k];if(!s.total&&!s.memos.length)return;
+        const vs=s.total>0?`${s.total%1===0?s.total:s.total.toFixed(2)}${d.unitLabel}`:'—';
+        tbody.innerHTML+=`<tr style="background:#f8f8f8"><td><span class="badge" style="background:${d.color}"></span><strong>${d.label}</strong></td><td style="text-align:right;font-weight:700;font-size:14px">${vs}</td><td style="text-align:right;color:#888;font-size:11px">${s.sheets.join('、')||'—'}</td></tr>`;
+      });
+    } else {
+      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#999;padding:18px">マーキングなし</td></tr>';
+    }
+  }
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function renderRepRows(tbody,ms){
+  const stats={};
+  Object.keys(DEFECTS).forEach(k=>stats[k]={total:0,memos:[]});
+  ms.forEach(m=>{stats[m.type].total+=(m.value||0);if(m.memo)stats[m.type].memos.push(m.memo);});
+  const used=Object.entries(DEFECTS).filter(([k])=>ms.some(m=>m.type===k));
+  if(!used.length){tbody.innerHTML+='<tr><td colspan="3" style="text-align:center;color:#999;padding:10px;font-size:12px">マーキングなし</td></tr>';return;}
+  used.forEach(([k,d])=>{
+    const s=stats[k];if(!ms.some(m=>m.type===k))return;
+    const vs=s.total>0?`${s.total%1===0?s.total:s.total.toFixed(2)}${d.unitLabel}`:'—';
+    tbody.innerHTML+=`<tr><td><span class="badge" style="background:${d.color}"></span><strong>${d.label}</strong></td><td style="text-align:right;font-weight:700;font-size:14px">${vs}</td><td style="text-align:right;color:#666;font-size:12px">${s.memos.join('、')||'—'}</td></tr>`;
+  });
+}
+
+function closeReport(){document.getElementById('modalOverlay').classList.remove('show');}
+
+// ===== 起動 =====
+window.addEventListener('load',()=>{
+  renderProjectList();
+  document.getElementById('projectScreen').style.display='flex';
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){cancelMark();closeReport();closeAllDrawers();}
+  if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undoLast();}
+});
+
+// Service Worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
