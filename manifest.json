@@ -1,0 +1,25 @@
+{
+  "name": "補修図面マーキング",
+  "short_name": "補修図面",
+  "description": "建物の補修箇所をマーキングする図面アプリ",
+  "start_url": "./hoshu_map.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
