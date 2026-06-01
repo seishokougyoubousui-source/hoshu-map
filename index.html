@@ -516,20 +516,18 @@ async function openProject(id){
   document.getElementById('projectScreen').style.display='none';
 
   const data=loadProjData(id)||{sheets:[],currentSheetIdx:-1};
-  // 画像をIndexedDBから復元
-  sheets=await Promise.all(data.sheets.map(async(s,i)=>({
-    name:s.name,
-    markers:s.markers||[],
-    imageData:await loadSheetImage(id,i)
-  })));
-  currentSheetIdx=data.currentSheetIdx>=0?data.currentSheetIdx:(sheets.length>0?0:-1);
+  // マーカーデータを復元（画像はswitchSheetで取得）
+  sheets=data.sheets.map(s=>({name:s.name,markers:s.markers||[]}));
+  currentSheetIdx=-1; // いったんリセット
   markers=[];
   imageLoaded=false;
   bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
   mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
 
-  if(sheets.length>0&&currentSheetIdx>=0){
-    await switchSheet(currentSheetIdx);
+  const targetIdx=data.currentSheetIdx>=0?data.currentSheetIdx:(sheets.length>0?0:-1);
+
+  if(sheets.length>0&&targetIdx>=0){
+    await switchSheet(targetIdx);
   } else {
     document.getElementById('uploadHint').style.display='flex';
     renderSheetTabs();
@@ -562,21 +560,26 @@ async function openProjectScreen(){
 }
 
 async function saveCurrentSheet(){
-  if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
-    sheets[currentSheetIdx].markers=[...markers];
-    if(imageLoaded&&currentProjectId){
-      const imgData=bgCanvas.toDataURL('image/jpeg',.65);
+  if(currentSheetIdx<0||!sheets[currentSheetIdx])return;
+  // マーカーを必ず先に書き込む
+  sheets[currentSheetIdx].markers=[...markers];
+  // 画像をIndexedDBに保存
+  if(imageLoaded&&currentProjectId){
+    try{
+      const imgData=bgCanvas.toDataURL('image/jpeg',.6);
       await saveSheetImage(currentProjectId,currentSheetIdx,imgData);
-      sheets[currentSheetIdx].imageData=imgData;
-    }
+    }catch(e){console.warn('画像保存失敗',e);}
   }
 }
 
 async function saveCurrentProject(){
   if(!currentProjectId)return;
+  // 先にシートを保存
   await saveCurrentSheet();
   setSaveStatus('saving');
+  // マーカーデータをLocalStorageに保存
   const ok=saveProjData(currentProjectId,{sheets,currentSheetIdx});
+  // 日付更新
   const projects=loadProjects();
   const proj=projects.find(p=>p.id===currentProjectId);
   if(proj){proj.date=new Date().toLocaleDateString('ja-JP');saveProjects(projects);}
@@ -614,17 +617,19 @@ function saveCurrentSheet(){
 }
 
 async function switchSheet(idx){
+  // 切り替え前に現在シートを確実に保存
   if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
     sheets[currentSheetIdx].markers=[...markers];
     if(imageLoaded&&currentProjectId){
-      const imgData=bgCanvas.toDataURL('image/jpeg',.65);
-      await saveSheetImage(currentProjectId,currentSheetIdx,imgData);
-      sheets[currentSheetIdx].imageData=imgData;
+      try{
+        const imgData=bgCanvas.toDataURL('image/jpeg',.6);
+        await saveSheetImage(currentProjectId,currentSheetIdx,imgData);
+      }catch(e){}
     }
   }
+  // マーカーデータ保存
   if(currentProjectId){
-    const lite={sheets:sheets.map(s=>({name:s.name,markers:s.markers})),currentSheetIdx:idx};
-    try{localStorage.setItem('hp_'+currentProjectId,JSON.stringify(lite));}catch{}
+    saveProjData(currentProjectId,{sheets,currentSheetIdx:idx});
   }
 
   currentSheetIdx=idx;
@@ -632,11 +637,12 @@ async function switchSheet(idx){
   markers=[...(s.markers||[])];
 
   // IndexedDBから画像を取得
-  if(!s.imageData&&currentProjectId){
-    s.imageData=await loadSheetImage(currentProjectId,idx);
+  let imgData=null;
+  if(currentProjectId){
+    imgData=await loadSheetImage(currentProjectId,idx);
   }
 
-  if(s.imageData){
+  if(imgData){
     const img=new Image();
     img.onload=()=>{
       setCanvasSize(img.width,img.height);
@@ -644,8 +650,9 @@ async function switchSheet(idx){
       imageLoaded=true;
       document.getElementById('uploadHint').style.display='none';
       redraw();updateCounts();
+      showToast(`📄 ${s.name}`,'#2980b9');
     };
-    img.src=s.imageData;
+    img.src=imgData;
   } else {
     imageLoaded=false;
     bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
