@@ -193,9 +193,13 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
   <button class="dm-btn" onclick="savePNG();closeMenu()">⬇️ PNG保存</button>
   <button class="dm-btn" onclick="printDrawing();closeMenu()">🖨 図面印刷</button>
   <button class="dm-btn" onclick="showReport();closeMenu()">📋 レポート</button>
+  <div style="border-top:1px solid #2a2a4a;margin:4px 0;"></div>
+  <button class="dm-btn" style="color:#f5a623;" onclick="backupProject();closeMenu()">💾 データ保存（バックアップ）</button>
+  <button class="dm-btn" style="color:#f5a623;" onclick="document.getElementById('restoreInput').click();closeMenu()">📥 データ読み込み（復元）</button>
 </div>
 <div id="menuOverlay" onclick="closeMenu()"></div>
 <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="loadFile(event)">
+<input type="file" id="restoreInput" accept=".json" onchange="restoreProject(event)" style="display:none">
 
 <!-- 図面タブバー -->
 <div class="sheet-bar" id="sheetBar">
@@ -1126,6 +1130,94 @@ function getMergedCanvas(){
   c.width=bgCanvas.width;c.height=bgCanvas.height;
   const ctx=c.getContext('2d');ctx.drawImage(bgCanvas,0,0);ctx.drawImage(markerCanvas,0,0);
   return c;
+}
+
+// ===== バックアップ・復元 =====
+async function backupProject(){
+  if(!currentProjectId){ showToast('現場を選択してください','#e94560'); return; }
+
+  // 現在の作業を保存
+  await saveCurrentProject();
+
+  const projects=loadProjects();
+  const proj=projects.find(p=>p.id===currentProjectId);
+  const data=loadProjData(currentProjectId)||{sheets:[],currentSheetIdx:-1};
+
+  // 全シートの画像をIndexedDBから取得してJSONに含める
+  setSaveStatus('saving');
+  const sheetsWithImages=await Promise.all(
+    data.sheets.map(async(s,i)=>({
+      name:s.name,
+      markers:s.markers||[],
+      imageData:await loadSheetImage(currentProjectId,i)||null
+    }))
+  );
+
+  const backup={
+    version:1,
+    projectName:proj?.name||'現場',
+    date:new Date().toISOString(),
+    sheets:sheetsWithImages,
+    currentSheetIdx:data.currentSheetIdx
+  };
+
+  const json=JSON.stringify(backup);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  a.download=`${safe(proj?.name||'現場')}_backup.json`;
+  a.href=url;
+  a.click();
+  URL.revokeObjectURL(url);
+  setSaveStatus('saved');
+  showToast('💾 バックアップを保存しました');
+}
+
+async function restoreProject(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  e.target.value='';
+
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const backup=JSON.parse(ev.target.result);
+      if(!backup.sheets){ showToast('⚠️ 無効なファイルです','#e94560'); return; }
+
+      // 新しい現場として追加
+      const id='p'+Date.now();
+      const name=backup.projectName||'復元データ';
+      const projects=loadProjects();
+      projects.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});
+      saveProjects(projects);
+
+      // マーカーデータをLocalStorageに保存
+      const lite={
+        sheets:backup.sheets.map(s=>({name:s.name,markers:s.markers||[]})),
+        currentSheetIdx:backup.currentSheetIdx||0
+      };
+      localStorage.setItem('hp_'+id,JSON.stringify(lite));
+
+      // 画像をIndexedDBに保存
+      for(let i=0;i<backup.sheets.length;i++){
+        const s=backup.sheets[i];
+        if(s.imageData){
+          await saveSheetImage(id,i,s.imageData);
+        }
+      }
+
+      showToast(`✅ 「${name}」を復元しました`);
+      // 復元した現場を開く
+      await openProject(id);
+      renderProjectList();
+
+    } catch(err){
+      showToast('⚠️ 読み込みに失敗しました','#e94560');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
 }
 
 function getFileName(ext){
