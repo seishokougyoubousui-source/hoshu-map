@@ -196,6 +196,7 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
   <div style="border-top:1px solid #2a2a4a;margin:4px 0;"></div>
   <button class="dm-btn" style="color:#f5a623;" onclick="backupProject();closeMenu()">💾 データ保存（バックアップ）</button>
   <button class="dm-btn" style="color:#f5a623;" onclick="document.getElementById('restoreInput').click();closeMenu()">📥 データ読み込み（復元）</button>
+  <button class="dm-btn" style="color:#27ae60;" onclick="saveReportExcel();closeMenu()">📊 Excelレポート出力</button>
 </div>
 <div id="menuOverlay" onclick="closeMenu()"></div>
 <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="loadFile(event)">
@@ -211,6 +212,8 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
   <div class="ind-dot" id="indDot" style="background:#27ae60"></div>
   <span id="indType">ひび割れ</span>
   <button class="mode-btn" id="modeBtn" onclick="toggleMode()" style="background:#27ae60;color:white;">✏️ マーキング</button>
+  <!-- 連続入力モード -->
+  <button class="mode-btn" id="quickBtn" onclick="toggleQuickMode()" style="background:#2a2a4a;color:#888;margin-left:4px;">⚡ 連続</button>
   <!-- マーカーサイズ選択 -->
   <div style="display:flex;align-items:center;gap:3px;margin-left:6px;flex-shrink:0;">
     <span style="font-size:9px;color:#888;">サイズ</span>
@@ -313,6 +316,8 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
       <button class="mb-btn mb-png" onclick="savePNG()">⬇️ 図面PNG</button>
       <button class="mb-btn mb-print" onclick="printDrawing()">🖨 図面</button>
       <button class="mb-btn" style="background:#8e44ad;color:white;" onclick="saveReportPNG()">⬇️ レポートPNG</button>
+      <button class="mb-btn" style="background:#27ae60;color:white;" onclick="saveReportExcel()">📊 Excel出力</button>
+      <button class="mb-btn" style="background:#2980b9;color:white;" onclick="saveReportDocx()">📝 Word出力</button>
       <button class="mb-btn mb-rpt" onclick="printReport()">🖨 レポート印刷</button>
     </div>
   </div>
@@ -1036,6 +1041,18 @@ function onCanvasClick(cx,cy){
   const p=getPos(cx,cy);
   pendingMark={x:p.x,y:p.y,type:currentType,shape:DEFECTS[currentType].shape,size:markerSize,value:null,memo:''};
   editingIdx=null;
+
+  // 連続入力モード：ポップアップなしで即登録
+  if(quickMode){
+    pendingMark.value = quickLastValue !== '' ? parseFloat(quickLastValue)||0 : 0;
+    pendingMark.memo  = '';
+    markers.push(pendingMark);
+    pendingMark = null;
+    redraw(); updateCounts();
+    saveCurrentProject();
+    showToast(`✅ ${DEFECTS[currentType].label} を追加`, DEFECTS[currentType].color);
+    return;
+  }
   openPopup();
 }
 
@@ -1079,6 +1096,7 @@ function onEditTypeChange(){
 async function saveMark(){
   const val=parseFloat(document.getElementById('valInput').value)||0;
   const memo=document.getElementById('memoInput').value;
+  quickLastValue = document.getElementById('valInput').value; // 連続入力用に記憶
   if(editingIdx!==null){
     const t=document.getElementById('editTypeSelect').value;
     const m=markers[editingIdx];
@@ -1456,7 +1474,436 @@ function renderRepRows(tbody,ms){
   });
 }
 
-function closeReport(){document.getElementById('modalOverlay').classList.remove('show');}
+// ===== 連続入力モード =====
+let quickMode = false;
+let quickLastValue = '';
+
+function toggleQuickMode(){
+  quickMode = !quickMode;
+  const btn = document.getElementById('quickBtn');
+  btn.style.background = quickMode ? '#e67e22' : '#2a2a4a';
+  btn.style.color      = quickMode ? 'white'   : '#888';
+  btn.textContent      = quickMode ? '⚡ 連続中' : '⚡ 連続';
+  showToast(quickMode
+    ? '⚡ 連続入力モード ON：タップするだけでマーキング（前回の数値を引き継ぎ）'
+    : '連続入力モード OFF', quickMode ? '#e67e22' : '#7f8c8d');
+}
+
+// ===== Excel出力 =====
+async function saveReportExcel(){
+  const projects = loadProjects();
+  const proj = currentProjectId ? projects.find(p => p.id === currentProjectId) : null;
+  const projName = proj?.name || '補修図面';
+  const safe = s => s.replace(/[\/\\:*?"<>|]/g, '_');
+
+  showToast('📊 Excelを生成中...');
+
+  // JSZipをロード
+  await new Promise((resolve, reject) => {
+    if(window.JSZip){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+
+  // 全シートのマーカーを集計
+  await saveCurrentSheet();
+  const allStats = {};
+  Object.keys(DEFECTS).forEach(k => allStats[k] = { total: 0, count: 0 });
+  sheets.forEach((sheet, i) => {
+    const ms = i === currentSheetIdx ? markers : (sheet.markers || []);
+    ms.forEach(m => {
+      allStats[m.type].total += (m.value || 0);
+      allStats[m.type].count++;
+    });
+  });
+
+  // XMLを生成
+  const sharedStrings = [];
+  const strMap = {};
+  function si(s){
+    const key = String(s);
+    if(key in strMap) return strMap[key];
+    const idx = sharedStrings.length;
+    strMap[key] = idx;
+    sharedStrings.push(key);
+    return idx;
+  }
+
+  // カラー定義
+  const COLORS = {
+    crack:   '27AE60', crack03: '1A1A2E', peel:  'E94560',
+    inject:  'E67E22', burst:   '2980B9', float: '8E44AD',
+    tile:    'F39C12', other:   '7F8C8D'
+  };
+
+  // シートデータを構築
+  const rows = [];
+
+  // ヘッダー行1（タイトル）
+  rows.push(`<row r="1" ht="36" customHeight="1">
+    <c r="A1" t="s" s="1"><v>${si(projName + ' 補修調査レポート')}</v></c>
+  </row>`);
+
+  // ヘッダー行2（項目ラベル）
+  rows.push(`<row r="2" ht="24" customHeight="1">
+    <c r="A2" t="s" s="2"><v>${si('現場名')}</v></c>
+    <c r="B2" t="s" s="3"><v>${si(projName)}</v></c>
+    <c r="D2" t="s" s="2"><v>${si('調査日')}</v></c>
+    <c r="E2" t="s" s="3"><v>${si(new Date().toLocaleDateString('ja-JP'))}</v></c>
+  </row>`);
+
+  // 空白行
+  rows.push(`<row r="3" ht="10" customHeight="1"></row>`);
+
+  // 集計表ヘッダー
+  rows.push(`<row r="4" ht="28" customHeight="1">
+    <c r="A4" t="s" s="1"><v>${si('■ 補修数量 集計表')}</v></c>
+  </row>`);
+
+  rows.push(`<row r="5" ht="26" customHeight="1">
+    <c r="A5" t="s" s="4"><v>${si('No.')}</v></c>
+    <c r="B5" t="s" s="4"><v>${si('補修種別')}</v></c>
+    <c r="C5" t="s" s="4"><v>${si('記号')}</v></c>
+    <c r="D5" t="s" s="4"><v>${si('単位')}</v></c>
+    <c r="E5" t="s" s="4"><v>${si('数量')}</v></c>
+    <c r="F5" t="s" s="4"><v>${si('備考')}</v></c>
+  </row>`);
+
+  // 種別データ行
+  const defectList = [
+    {key:'crack',   label:'ひび割れ',     symbol:'〰', unit:'m'},
+    {key:'crack03', label:'ひび割れ(0.3↑)',symbol:'〰', unit:'m'},
+    {key:'peel',    label:'剥離・浮き',   symbol:'⭕', unit:'㎡'},
+    {key:'inject',  label:'浮き注入',     symbol:'⬜', unit:'穴'},
+    {key:'burst',   label:'欠損・爆裂',   symbol:'△', unit:'箇所'},
+    {key:'float',   label:'タイル浮き',   symbol:'⬜', unit:'㎡'},
+    {key:'tile',    label:'タイル貼替',   symbol:'⬜', unit:'枚'},
+    {key:'other',   label:'その他',       symbol:'⭕', unit:'箇所'},
+  ];
+
+  defectList.forEach((d, i) => {
+    const rowNum = 6 + i;
+    const s = allStats[d.key] || { total: 0, count: 0 };
+    const val = s.total > 0 ? (s.total % 1 === 0 ? s.total : parseFloat(s.total.toFixed(2))) : s.count;
+    const style = i % 2 === 0 ? 5 : 6;
+    rows.push(`<row r="${rowNum}" ht="24" customHeight="1">
+      <c r="A${rowNum}" t="n" s="7"><v>${i+1}</v></c>
+      <c r="B${rowNum}" t="s" s="${style}"><v>${si(d.label)}</v></c>
+      <c r="C${rowNum}" t="s" s="${style}"><v>${si(d.symbol)}</v></c>
+      <c r="D${rowNum}" t="s" s="${style}"><v>${si(d.unit)}</v></c>
+      <c r="E${rowNum}" t="n" s="8"><v>${val || 0}</v></c>
+      <c r="F${rowNum}" t="s" s="${style}"><v>${si(s.count + 'マーカー')}</v></c>
+    </row>`);
+  });
+
+  // 合計行
+  const totalRow = 6 + defectList.length;
+  const totalVal = defectList.reduce((sum, d) => {
+    const s = allStats[d.key] || { total: 0, count: 0 };
+    return sum + (s.total > 0 ? s.total : s.count);
+  }, 0);
+  rows.push(`<row r="${totalRow}" ht="30" customHeight="1">
+    <c r="A${totalRow}" t="s" s="1"><v>${si('合　計')}</v></c>
+    <c r="E${totalRow}" t="n" s="9"><v>${parseFloat(totalVal.toFixed(2))}</v></c>
+  </row>`);
+
+  // 図面別明細ヘッダー
+  const detailStart = totalRow + 2;
+  rows.push(`<row r="${detailStart}" ht="30" customHeight="1">
+    <c r="A${detailStart}" t="s" s="1"><v>${si('■ 図面別 補修明細')}</v></c>
+  </row>`);
+  rows.push(`<row r="${detailStart+1}" ht="26" customHeight="1">
+    <c r="A${detailStart+1}" t="s" s="4"><v>${si('図面名')}</v></c>
+    <c r="B${detailStart+1}" t="s" s="4"><v>${si('種別')}</v></c>
+    <c r="C${detailStart+1}" t="s" s="4"><v>${si('単位')}</v></c>
+    <c r="D${detailStart+1}" t="s" s="4"><v>${si('数量')}</v></c>
+    <c r="E${detailStart+1}" t="s" s="4"><v>${si('メモ')}</v></c>
+  </row>`);
+
+  // 図面別明細データ
+  let detailRow = detailStart + 2;
+  sheets.forEach((sheet, si2) => {
+    const ms = si2 === currentSheetIdx ? markers : (sheet.markers || []);
+    if(ms.length === 0) return;
+    ms.forEach((m, mi) => {
+      const d = DEFECTS[m.type];
+      if(!d) return;
+      const val = m.value > 0 ? m.value : '';
+      const rowStyle = mi % 2 === 0 ? 5 : 6;
+      rows.push(`<row r="${detailRow}" ht="22" customHeight="1">
+        <c r="A${detailRow}" t="s" s="${rowStyle}"><v>${si(sheet.name)}</v></c>
+        <c r="B${detailRow}" t="s" s="${rowStyle}"><v>${si(d.label)}</v></c>
+        <c r="C${detailRow}" t="s" s="${rowStyle}"><v>${si(d.unitLabel)}</v></c>
+        ${val !== '' ? `<c r="D${detailRow}" t="n" s="8"><v>${val}</v></c>` : `<c r="D${detailRow}" t="s" s="8"><v>${si('')}</v></c>`}
+        <c r="E${detailRow}" t="s" s="${rowStyle}"><v>${si(m.memo||'')}</v></c>
+      </row>`);
+      detailRow++;
+    });
+  });
+
+  // sharedStrings XML
+  const ssXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${sharedStrings.length}" uniqueCount="${sharedStrings.length}">
+${sharedStrings.map(s=>`<si><t xml:space="preserve">${s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</t></si>`).join('\n')}
+</sst>`;
+
+  // styles XML（シンプルな定義）
+  const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="5">
+    <font><sz val="11"/><name val="Arial"/></font>
+    <font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>
+    <font><b/><sz val="11"/><color rgb="FF1A1A2E"/><name val="Arial"/></font>
+    <font><sz val="11"/><color rgb="FF333333"/><name val="Arial"/></font>
+    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>
+  </fonts>
+  <fills count="6">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF1A1A2E"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF8F9FA"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFFFF9C4"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border><left style="thin"><color rgb="FFCCCCCC"/></left><right style="thin"><color rgb="FFCCCCCC"/></right><top style="thin"><color rgb="FFCCCCCC"/></top><bottom style="thin"><color rgb="FFCCCCCC"/></bottom></border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="10">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="3" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="4" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="2" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf>
+  </cellXfs>
+</styleSheet>`;
+
+  // sheet XML
+  const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetView workbookViewId="0"><selection activeCell="A1"/></sheetView>
+  <sheetFormatPr defaultRowHeight="20"/>
+  <cols>
+    <col min="1" max="1" width="6" customWidth="1"/>
+    <col min="2" max="2" width="22" customWidth="1"/>
+    <col min="3" max="3" width="10" customWidth="1"/>
+    <col min="4" max="4" width="12" customWidth="1"/>
+    <col min="5" max="5" width="14" customWidth="1"/>
+    <col min="6" max="6" width="28" customWidth="1"/>
+  </cols>
+  <sheetData>${rows.join('\n')}</sheetData>
+  <pageSetup orientation="portrait" paperSize="9"/>
+</worksheet>`;
+
+  const wbXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets><sheet name="補修レポート" sheetId="1" r:id="rId1"/></sheets>
+</workbook>`;
+
+  const wbRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+  const ct = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`;
+
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', ct);
+  zip.file('_rels/.rels', rels);
+  zip.file('xl/workbook.xml', wbXml);
+  zip.file('xl/_rels/workbook.xml.rels', wbRels);
+  zip.file('xl/worksheets/sheet1.xml', sheetXml);
+  zip.file('xl/sharedStrings.xml', ssXml);
+  zip.file('xl/styles.xml', stylesXml);
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.download = `${safe(projName)}_レポート.xlsx`;
+  a.href = url; a.click();
+  URL.revokeObjectURL(url);
+  showToast(`📊 ${safe(projName)}_レポート.xlsx を保存しました`);
+}
+async function saveReportDocx(){
+  const projects=loadProjects();
+  const proj=currentProjectId?projects.find(p=>p.id===currentProjectId):null;
+  const projName=proj?.name||'補修図面';
+  const title=document.getElementById('repTitle').textContent;
+  const tbody=document.getElementById('repBody');
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  const date=new Date().toLocaleDateString('ja-JP');
+
+  // テーブル行データを収集
+  const tableRows=[];
+  rows.forEach(row=>{
+    const cells=row.querySelectorAll('td');
+    if(cells.length===0)return;
+    // セクションヘッダー行
+    if(cells.length===1){
+      tableRows.push({type:'header',text:cells[0].textContent.trim()});
+      return;
+    }
+    const badge=cells[0].querySelector('.badge');
+    const color=badge?badge.style.background.replace('#',''):'888888';
+    tableRows.push({
+      type:'data',
+      label:cells[0].textContent.trim(),
+      value:cells[1]?cells[1].textContent.trim():'',
+      memo:cells[2]?cells[2].textContent.trim():'',
+      color
+    });
+  });
+
+  // docx XMLを組み立て
+  const escape=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function makeRow(cells, isHeader=false){
+    const shading=isHeader?`<w:shd w:val="clear" w:color="auto" w:fill="1A1A2E"/>`:'';
+    const textColor=isHeader?`<w:color w:val="FFFFFF"/>`:'';
+    const bold=isHeader?`<w:b/>`:'';
+    return `<w:tr>${cells.map(({text,w,align='left'})=>`
+      <w:tc>
+        <w:tcPr>
+          <w:tcW w:w="${w}" w:type="dxa"/>
+          ${shading}
+          <w:tcMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>
+        </w:tcPr>
+        <w:p><w:pPr><w:jc w:val="${align}"/></w:pPr>
+          <w:r><w:rPr>${bold}${textColor}<w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr><w:t xml:space="preserve">${escape(text)}</w:t></w:r>
+        </w:p>
+      </w:tc>`).join('')}</w:tr>`;
+  }
+
+  function makeSectionRow(text){
+    return `<w:tr>
+      <w:tc>
+        <w:tcPr><w:tcW w:w="9026" w:type="dxa"/><w:gridSpan w:val="3"/><w:shd w:val="clear" w:color="auto" w:fill="2A2A4A"/>
+          <w:tcMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>
+        </w:tcPr>
+        <w:p><w:r><w:rPr><w:b/><w:color w:val="F5A623"/><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr><w:t>${escape(text)}</w:t></w:r></w:p>
+      </w:tc>
+    </w:tr>`;
+  }
+
+  const tblRows=[
+    makeRow([{text:'種別',w:3500},{text:'数量',w:2500,align:'right'},{text:'メモ',w:3026,align:'right'}],true),
+    ...tableRows.map(r=>{
+      if(r.type==='header') return makeSectionRow(r.text);
+      return makeRow([{text:r.label,w:3500},{text:r.value,w:2500,align:'right'},{text:r.memo,w:3026,align:'right'}]);
+    })
+  ];
+
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<w:body>
+  <w:p><w:pPr><w:jc w:val="center"/></w:pPr>
+    <w:r><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/></w:rPr><w:t>${escape(projName)} 補修調査レポート</w:t></w:r>
+  </w:p>
+  <w:p><w:pPr><w:jc w:val="center"/></w:pPr>
+    <w:r><w:rPr><w:sz w:val="20"/><w:szCs w:val="20"/><w:color w:val="888888"/></w:rPr><w:t>${escape(date)}</w:t></w:r>
+  </w:p>
+  <w:p><w:r><w:t> </w:t></w:r></w:p>
+  <w:p><w:r><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${escape(title)}</w:t></w:r></w:p>
+  <w:p><w:r><w:t> </w:t></w:r></w:p>
+  <w:tbl>
+    <w:tblPr>
+      <w:tblW w:w="9026" w:type="dxa"/>
+      <w:tblBorders>
+        <w:top w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+        <w:left w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+        <w:right w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+        <w:insideV w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
+      </w:tblBorders>
+    </w:tblPr>
+    <w:tblGrid>
+      <w:gridCol w:w="3500"/>
+      <w:gridCol w:w="2500"/>
+      <w:gridCol w:w="3026"/>
+    </w:tblGrid>
+    ${tblRows.join('\n')}
+  </w:tbl>
+  <w:p><w:r><w:t> </w:t></w:r></w:p>
+  <w:sectPr>
+    <w:pgSz w:w="11906" w:h="16838"/>
+    <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
+  </w:sectPr>
+</w:body>
+</w:document>`;
+
+  const relsXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+  const wordRelsXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`;
+
+  const contentTypesXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+  // ZIP形式でdocxを生成（JSZipライブラリを動的ロード）
+  showToast('📝 Word文書を生成中...');
+
+  // JSZipをCDNから動的ロード
+  await new Promise((resolve,reject)=>{
+    if(window.JSZip){resolve();return;}
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload=resolve;s.onerror=reject;
+    document.head.appendChild(s);
+  });
+
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml',contentTypesXml);
+  zip.file('_rels/.rels',relsXml);
+  zip.file('word/document.xml',docXml);
+  zip.file('word/_rels/document.xml.rels',wordRelsXml);
+
+  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  a.download=`${safe(projName)}_レポート.docx`;
+  a.href=url;a.click();
+  URL.revokeObjectURL(url);
+  showToast(`📝 ${safe(projName)}_レポート.docx を保存しました`);
+}
 
 // ===== レポートをCanvasに描画してPNG保存・印刷 =====
 function buildReportCanvas(){
