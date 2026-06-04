@@ -478,7 +478,20 @@ async function switchSheet(idx){
   const imgData=currentProjectId?await loadImg(currentProjectId,idx):null;
   if(imgData){
     const img=new Image();
-    img.onload=()=>{setCanvasSize(img.width,img.height);bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);imageLoaded=true;document.getElementById('uploadHint').style.display='none';redraw();updateCounts();};
+    img.onload=()=>{
+      setCanvasSize(img.width,img.height);
+      bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
+      imageLoaded=true;
+      document.getElementById('uploadHint').style.display='none';
+      // 古いピクセル座標(_needsConvert)を比率に変換
+      markers=markers.map(m=>{
+        if(m._needsConvert){
+          return {...m,x:m.x/bgCanvas.width,y:m.y/bgCanvas.height,_needsConvert:false};
+        }
+        return m;
+      });
+      redraw();updateCounts();
+    };
     img.src=imgData;
   } else {
     imageLoaded=false;bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
@@ -618,8 +631,34 @@ function selectDefect(type){
 let t0=null,t1=null,startDist=0,startScale=1,startX=0,startY=0,startVX=0,startVY=0;
 let tapTime=0,tapMoved=false,longTimer=null,dragIdx=null,isDrag=false;
 
-function getPos(cx,cy){const r=markerCanvas.getBoundingClientRect();return{x:(cx-r.left)*(markerCanvas.width/r.width),y:(cy-r.top)*(markerCanvas.height/r.height)};}
-function nearMarker(cx,cy){const p=getPos(cx,cy);for(let i=markers.length-1;i>=0;i--)if(Math.hypot(p.x-markers[i].x,p.y-markers[i].y)<16)return i;return -1;}
+// 座標変換：クリック位置→キャンバス内比率（0〜1）で保存
+function getPos(cx,cy){
+  const r=markerCanvas.getBoundingClientRect();
+  // 比率で返す（画面サイズに依存しない）
+  return{
+    x:(cx-r.left)*(markerCanvas.width/r.width)/markerCanvas.width,
+    y:(cy-r.top)*(markerCanvas.height/r.height)/markerCanvas.height
+  };
+}
+
+// 比率→実際のピクセル座標に変換（描画・近傍判定用）
+function toPixel(rx,ry){
+  return{x:rx*markerCanvas.width, y:ry*markerCanvas.height};
+}
+
+// 近傍マーカー検索（比率座標対応）
+function nearMarker(cx,cy){
+  const r=markerCanvas.getBoundingClientRect();
+  const px=(cx-r.left)*(markerCanvas.width/r.width);
+  const py=(cy-r.top)*(markerCanvas.height/r.height);
+  for(let i=markers.length-1;i>=0;i--){
+    const m=markers[i];
+    const mx=m.x*markerCanvas.width;
+    const my=m.y*markerCanvas.height;
+    if(Math.hypot(px-mx,py-my)<16)return i;
+  }
+  return -1;
+}
 
 markerCanvas.addEventListener('touchstart',e=>{
   e.preventDefault();tapTime=Date.now();tapMoved=false;isDrag=false;dragIdx=null;
@@ -752,9 +791,17 @@ function deleteMark(){
 }
 
 // ===== 描画 =====
-function redraw(){mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);markers.forEach(m=>drawM(mCtx,m,1));}
+function redraw(){
+  mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+  markers.forEach(m=>drawM(mCtx,m,1));
+}
+
 function drawM(ctx,m,scale){
-  const x=m.x*scale,y=m.y*scale,color=DEFECTS[m.type]?.color||'#888',shape=m.shape;
+  // 比率座標をピクセルに変換
+  const cw = scale===1 ? markerCanvas.width  : markerCanvas.width*scale;
+  const ch = scale===1 ? markerCanvas.height : markerCanvas.height*scale;
+  const x=m.x*cw, y=m.y*ch;
+  const color=DEFECTS[m.type]?.color||'#888', shape=m.shape;
   const sz=(m.size||3)*scale;
   const val=m.value>0?(m.value%1===0?String(m.value):m.value.toFixed(1)):'';
   const fs=Math.max(5,sz*2);
@@ -825,8 +872,45 @@ function getMerged(scale=2){
   const c=document.createElement('canvas');c.width=w;c.height=h;
   const ctx=c.getContext('2d');ctx.drawImage(bgCanvas,0,0,w,h);
   const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
-  const tCtx=tmp.getContext('2d');markers.forEach(m=>drawM(tCtx,m,scale));
+  const tCtx=tmp.getContext('2d');
+  // 高解像度で比率座標からマーカーを描画
+  markers.forEach(m=>{
+    const hm={...m, x:m.x*w, y:m.y*h};
+    drawMpx(tCtx,hm,scale);
+  });
   ctx.drawImage(tmp,0,0);return c;
+}
+
+// ピクセル座標で描画（getMerged用）
+function drawMpx(ctx,m,scale){
+  const x=m.x,y=m.y;
+  const color=DEFECTS[m.type]?.color||'#888',shape=m.shape;
+  const sz=(m.size||3)*scale;
+  const val=m.value>0?(m.value%1===0?String(m.value):m.value.toFixed(1)):'';
+  const fs=Math.max(5,sz*2);
+  ctx.save();ctx.font=`bold ${fs}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  const tw=val?ctx.measureText(val).width:0;
+  if(shape==='circle'){
+    const r=Math.max(sz*1.5,tw/2+sz);
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y);}
+  } else if(shape==='wave'){
+    const ww=Math.max(sz*4,tw+sz*2),amp=sz*0.7,steps=6,sw=ww/steps,sx=x-ww/2;
+    ctx.beginPath();ctx.moveTo(sx,y);
+    for(let i=0;i<steps;i++)ctx.quadraticCurveTo(sx+sw*i+sw/2,y+(i%2===0?-amp:amp),sx+sw*(i+1),y);
+    ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,sz*0.4);ctx.lineCap='round';ctx.stroke();
+    if(val){ctx.fillStyle=color;ctx.fillText(val,x,y+amp+fs);}
+  } else if(shape==='rect'){
+    const rw=Math.max(sz*3,tw+sz*2),rh=fs+sz;
+    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x-rw/2,y-rh/2,rw,rh,sz*0.5);ctx.fill();
+    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y);}
+  } else if(shape==='triangle'){
+    const tr=Math.max(sz*2,tw/2+sz*1.5),th=tr*1.8;
+    ctx.beginPath();ctx.moveTo(x,y-th*.6);ctx.lineTo(x+tr,y+th*.4);ctx.lineTo(x-tr,y+th*.4);ctx.closePath();
+    ctx.fillStyle=color;ctx.fill();
+    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y+th*.08);}
+  }
+  ctx.restore();
 }
 function getFName(ext){
   const ps=loadProjs();const p=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
@@ -879,7 +963,16 @@ async function restoreProject(e){
       const backup=JSON.parse(ev.target.result);if(!backup.sheets){toast('⚠️ 無効なファイルです','#e94560');return;}
       const id='p'+Date.now(),name=backup.projectName||'復元データ';
       const ps=loadProjs();ps.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});saveProjs(ps);
-      localStorage.setItem('hp_'+id,JSON.stringify({sheets:backup.sheets.map(s=>({name:s.name,markers:s.markers||[]})),currentSheetIdx:backup.currentSheetIdx||0}));
+      // 古いデータ（ピクセル座標）を比率に変換
+      const convertedSheets=backup.sheets.map(s=>({
+        name:s.name,
+        markers:(s.markers||[]).map(m=>{
+          // x,yが1より大きければピクセル座標なので比率に変換が必要
+          // 画像サイズが不明のため、後でswitchSheet時に変換フラグを立てる
+          return {...m, _needsConvert: m.x>1||m.y>1};
+        })
+      }));
+      localStorage.setItem('hp_'+id,JSON.stringify({sheets:convertedSheets,currentSheetIdx:backup.currentSheetIdx||0}));
       for(let i=0;i<backup.sheets.length;i++)if(backup.sheets[i].imageData)await saveImg(id,i,backup.sheets[i].imageData);
       toast(`✅ 「${name}」を復元しました`);await openProject(id);renderProjList();
     }catch{toast('⚠️ 読み込みに失敗しました','#e94560');}
