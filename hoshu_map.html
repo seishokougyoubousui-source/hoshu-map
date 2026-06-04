@@ -483,10 +483,10 @@ async function switchSheet(idx){
       bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
       imageLoaded=true;
       document.getElementById('uploadHint').style.display='none';
-      // 古いピクセル座標(_needsConvert)を比率に変換
+      // 古いピクセル座標を元画像サイズで正確に比率変換
       markers=markers.map(m=>{
-        if(m._needsConvert){
-          return {...m,x:m.x/bgCanvas.width,y:m.y/bgCanvas.height,_needsConvert:false};
+        if(m._needsConvert||m.x>1||m.y>1){
+          return {...m,x:m.x/img.naturalWidth,y:m.y/img.naturalHeight,_needsConvert:false};
         }
         return m;
       });
@@ -963,15 +963,30 @@ async function restoreProject(e){
       const backup=JSON.parse(ev.target.result);if(!backup.sheets){toast('⚠️ 無効なファイルです','#e94560');return;}
       const id='p'+Date.now(),name=backup.projectName||'復元データ';
       const ps=loadProjs();ps.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});saveProjs(ps);
-      // 古いデータ（ピクセル座標）を比率に変換
-      const convertedSheets=backup.sheets.map(s=>({
-        name:s.name,
-        markers:(s.markers||[]).map(m=>{
-          // x,yが1より大きければピクセル座標なので比率に変換が必要
-          // 画像サイズが不明のため、後でswitchSheet時に変換フラグを立てる
-          return {...m, _needsConvert: m.x>1||m.y>1};
-        })
+
+      // 各シートの画像サイズを取得してピクセル座標→比率に正確に変換
+      const convertedSheets=await Promise.all(backup.sheets.map(async(s,i)=>{
+        const imgData=s.imageData||null;
+        let imgW=1,imgH=1;
+        if(imgData){
+          // 画像の元サイズを取得
+          await new Promise(r=>{
+            const img=new Image();
+            img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;r();};
+            img.onerror=r;
+            img.src=imgData;
+          });
+        }
+        const convertedMarkers=(s.markers||[]).map(m=>{
+          if(m.x>1||m.y>1){
+            // ピクセル座標→比率に変換（元画像サイズ基準）
+            return {...m,x:m.x/imgW,y:m.y/imgH,_needsConvert:false};
+          }
+          return m;
+        });
+        return {name:s.name,markers:convertedMarkers};
       }));
+
       localStorage.setItem('hp_'+id,JSON.stringify({sheets:convertedSheets,currentSheetIdx:backup.currentSheetIdx||0}));
       for(let i=0;i<backup.sheets.length;i++)if(backup.sheets[i].imageData)await saveImg(id,i,backup.sheets[i].imageData);
       toast(`✅ 「${name}」を復元しました`);await openProject(id);renderProjList();
