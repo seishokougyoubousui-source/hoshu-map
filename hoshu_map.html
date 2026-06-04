@@ -1237,11 +1237,64 @@ function toggleMenu(){
 function closeMenu(){document.getElementById('dropMenu').style.display='none';document.getElementById('menuOverlay').style.display='none';}
 
 // ===== 印刷・保存 =====
-function getMergedCanvas(){
+function getMergedCanvas(scale=2){
+  // 印刷用に高解像度で合成（デフォルト2倍）
+  const w=bgCanvas.width*scale;
+  const h=bgCanvas.height*scale;
   const c=document.createElement('canvas');
-  c.width=bgCanvas.width;c.height=bgCanvas.height;
-  const ctx=c.getContext('2d');ctx.drawImage(bgCanvas,0,0);ctx.drawImage(markerCanvas,0,0);
+  c.width=w; c.height=h;
+  const ctx=c.getContext('2d');
+
+  // 背景図面を拡大描画
+  ctx.drawImage(bgCanvas,0,0,w,h);
+
+  // マーカーを高解像度で再描画
+  const tempCanvas=document.createElement('canvas');
+  tempCanvas.width=w; tempCanvas.height=h;
+  const tCtx=tempCanvas.getContext('2d');
+
+  // 現在のmCtxの描画をscale倍で再描画
+  markers.forEach(m=>{
+    drawMarkerOnCtx(tCtx, m, scale);
+  });
+  ctx.drawImage(tempCanvas,0,0);
   return c;
+}
+
+function drawMarkerOnCtx(ctx, m, scale=1){
+  const x=m.x*scale, y=m.y*scale;
+  const type=m.type, shape=m.shape;
+  const color=DEFECTS[type]?.color||'#888';
+  const sz=(m.size||3)*scale;
+  const val=m.value>0?(m.value%1===0?String(m.value):m.value.toFixed(1)):'';
+  const fs=Math.max(5,sz*2);
+
+  ctx.save();
+  ctx.font=`bold ${fs}px sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const tw=val?ctx.measureText(val).width:0;
+
+  if(shape==='circle'){
+    const r=Math.max(sz*1.5,tw/2+sz);
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y);}
+  } else if(shape==='wave'){
+    const ww=Math.max(sz*4,tw+sz*2),amp=sz*0.7,steps=6,sw=ww/steps,sx=x-ww/2;
+    ctx.beginPath();ctx.moveTo(sx,y);
+    for(let i=0;i<steps;i++){ctx.quadraticCurveTo(sx+sw*i+sw/2,y+(i%2===0?-amp:amp),sx+sw*(i+1),y);}
+    ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,sz*0.4);ctx.lineCap='round';ctx.stroke();
+    if(val){ctx.fillStyle=color;ctx.fillText(val,x,y+amp+fs);}
+  } else if(shape==='rect'){
+    const rw=Math.max(sz*3,tw+sz*2),rh=fs+sz;
+    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x-rw/2,y-rh/2,rw,rh,sz*0.5);ctx.fill();
+    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y);}
+  } else if(shape==='triangle'){
+    const tr=Math.max(sz*2,tw/2+sz*1.5),th=tr*1.8;
+    ctx.beginPath();ctx.moveTo(x,y-th*.6);ctx.lineTo(x+tr,y+th*.4);ctx.lineTo(x-tr,y+th*.4);ctx.closePath();
+    ctx.fillStyle=color;ctx.fill();
+    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y+th*.08);}
+  }
+  ctx.restore();
 }
 
 // ===== バックアップ・復元 =====
@@ -1493,9 +1546,54 @@ function toggleQuickMode(){
 async function saveReportExcel(){
   const projects = loadProjects();
   const proj = currentProjectId ? projects.find(p => p.id === currentProjectId) : null;
-  const projName = proj?.name || '補修図面';
-  const safe = s => s.replace(/[\/\\:*?"<>|]/g, '_');
+  const defaultName = proj?.name || '補修図面';
+  const today = new Date().toLocaleDateString('ja-JP');
 
+  // 現場情報入力モーダル
+  let projName = defaultName, dateStr = today, staffStr = '';
+  await new Promise(resolve=>{
+    const old=document.getElementById('excelInfoModal');
+    if(old)old.remove();
+    const modal=document.createElement('div');
+    modal.id='excelInfoModal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:5000;display:flex;align-items:center;justify-content:center;';
+    modal.innerHTML=`
+      <div style="background:#1a1a2e;border-radius:18px;padding:24px;width:min(420px,90vw);color:white;">
+        <p style="font-size:15px;font-weight:700;margin-bottom:16px;color:#f5a623;">📊 Excelレポート出力</p>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">現場名</label>
+          <input id="ei_name" type="text" value="${defaultName}"
+            style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">調査日</label>
+          <input id="ei_date" type="text" value="${today}"
+            style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;">
+        </div>
+        <div style="margin-bottom:18px;">
+          <label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">担当者</label>
+          <input id="ei_staff" type="text" placeholder="例）山田太郎"
+            style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;">
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('excelInfoModal').remove()"
+            style="flex:1;padding:12px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;touch-action:manipulation;">キャンセル</button>
+          <button id="ei_ok"
+            style="flex:1;padding:12px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">出力する</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    setTimeout(()=>document.getElementById('ei_name')?.focus(),100);
+    document.getElementById('ei_ok').onclick=()=>{
+      projName  = document.getElementById('ei_name')?.value?.trim()||defaultName;
+      dateStr   = document.getElementById('ei_date')?.value?.trim()||today;
+      staffStr  = document.getElementById('ei_staff')?.value?.trim()||'';
+      modal.remove();
+      resolve();
+    };
+  });
+
+  const safe = s => s.replace(/[\/\\:*?"<>|]/g, '_');
   showToast('📊 Excelを生成中...');
 
   // JSZipをロード
@@ -1543,7 +1641,7 @@ async function saveReportExcel(){
 
   // ヘッダー行1（タイトル）
   rows.push(`<row r="1" ht="36" customHeight="1">
-    <c r="A1" t="s" s="1"><v>${si(projName + ' 補修調査レポート')}</v></c>
+    <c r="A1" t="s" s="1"><v>${si(projName + '　補修調査レポート')}</v></c>
   </row>`);
 
   // ヘッダー行2（項目ラベル）
@@ -1551,7 +1649,9 @@ async function saveReportExcel(){
     <c r="A2" t="s" s="2"><v>${si('現場名')}</v></c>
     <c r="B2" t="s" s="3"><v>${si(projName)}</v></c>
     <c r="D2" t="s" s="2"><v>${si('調査日')}</v></c>
-    <c r="E2" t="s" s="3"><v>${si(new Date().toLocaleDateString('ja-JP'))}</v></c>
+    <c r="E2" t="s" s="3"><v>${si(dateStr)}</v></c>
+    <c r="F2" t="s" s="2"><v>${si('担当者')}</v></c>
+    <c r="G2" t="s" s="3"><v>${si(staffStr)}</v></c>
   </row>`);
 
   // 空白行
