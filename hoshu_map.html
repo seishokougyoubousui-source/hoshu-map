@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="補修図面">
@@ -11,41 +11,39 @@
 <title>補修図面アプリ</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-button{touch-action:manipulation;}
+button{touch-action:manipulation;font-family:inherit;}
 body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:#0f0f1a;height:100dvh;display:flex;flex-direction:column;overflow:hidden;color:white;}
-
-/* ===== 現場選択画面 ===== */
-#projectScreen{position:fixed;inset:0;background:#0f0f1a;z-index:2000;display:flex;flex-direction:column;touch-action:manipulation;}
-.ps-header{background:#1a1a2e;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2a4a;}
-.ps-header h2{font-size:17px;font-weight:800;color:white;}
+/* 現場選択 */
+#projectScreen{position:fixed;inset:0;background:#0f0f1a;z-index:2000;display:flex;flex-direction:column;}
+.ps-header{background:#1a1a2e;padding:14px 18px;border-bottom:1px solid #2a2a4a;}
+.ps-header h2{font-size:17px;font-weight:800;}
 .ps-header h2 span{color:#f5a623;}
 .ps-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
 .ps-empty{color:#555;text-align:center;padding:48px 20px;font-size:14px;line-height:2;}
-.ps-card{background:#1a1a2e;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;touch-action:manipulation;}
+.ps-card{background:#1a1a2e;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:2px solid transparent;transition:border-color .15s;}
 .ps-card:active{border-color:#f5a623;}
 .ps-icon{font-size:26px;flex-shrink:0;}
 .ps-info{flex:1;min-width:0;}
 .ps-name{font-size:15px;font-weight:700;}
 .ps-meta{color:#888;font-size:11px;margin-top:3px;}
-.ps-del{padding:6px 10px;border:none;border-radius:8px;background:#2a1a1a;color:#f88;font-size:12px;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
-.ps-new{margin:0 14px 16px;padding:14px;background:#f5a623;color:#1a1a1a;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
-
-/* ===== メインアプリ ===== */
-header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #2a2a4a;min-height:46px;}
-.hd-left{display:flex;align-items:center;gap:8px;}
-.hd-title{font-size:13px;font-weight:800;color:white;}
+.ps-btn{padding:6px 10px;border:none;border-radius:8px;font-size:12px;cursor:pointer;flex-shrink:0;}
+.ps-edit{background:#2a2a4a;color:#f5a623;}
+.ps-del{background:#2a1a1a;color:#f88;}
+.ps-new{margin:0 14px 16px;padding:14px;background:#f5a623;color:#1a1a1a;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;}
+/* ヘッダー */
+header{background:#1a1a2e;padding:6px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #2a2a4a;min-height:44px;}
+.hd-title{font-size:13px;font-weight:800;}
 .hd-title span{color:#f5a623;}
-.proj-badge{background:#2a2a4a;color:#f5a623;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:pointer;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.menu-btn{background:#2a2a4a;color:white;border:none;border-radius:8px;font-size:18px;padding:6px 12px;cursor:pointer;}
-
-/* ドロップダウン */
-#dropMenu{display:none;position:fixed;top:48px;right:10px;background:#1c1c2e;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:500;min-width:190px;overflow:hidden;}
+.proj-badge{background:#2a2a4a;color:#f5a623;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:pointer;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:8px;}
+.menu-btn{background:#2a2a4a;color:white;border:none;border-radius:8px;font-size:18px;padding:5px 12px;cursor:pointer;}
+/* メニュー */
+#dropMenu{display:none;position:fixed;top:46px;right:10px;background:#1c1c2e;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:500;min-width:210px;overflow:hidden;}
 .dm-btn{width:100%;padding:13px 18px;border:none;background:transparent;color:white;font-size:14px;text-align:left;cursor:pointer;border-bottom:1px solid #2a2a4a;}
 .dm-btn:last-child{border-bottom:none;}
 .dm-btn:active{background:#2a2a4a;}
+.dm-sep{height:1px;background:#2a2a4a;}
 #menuOverlay{display:none;position:fixed;inset:0;z-index:499;}
-
-/* 図面タブバー */
+/* タブバー */
 .sheet-bar{background:#16213e;display:flex;align-items:center;height:34px;flex-shrink:0;overflow-x:auto;overflow-y:hidden;gap:2px;padding:0 4px;border-bottom:1px solid #2a2a4a;}
 .sheet-bar::-webkit-scrollbar{height:3px;}
 .sheet-bar::-webkit-scrollbar-thumb{background:#444;border-radius:2px;}
@@ -54,133 +52,108 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
 .s-tab .sx{font-size:12px;color:#666;margin-left:2px;}
 .s-tab.active .sx{color:#aaa;}
 .s-add{padding:3px 10px;border:none;border-radius:5px;background:transparent;color:#f5a623;font-size:18px;cursor:pointer;flex-shrink:0;}
-
 /* インジケーター */
-.indicator{display:flex;align-items:center;gap:6px;padding:5px 12px;background:#16213e;font-size:11px;color:#ccc;flex-shrink:0;border-bottom:1px solid #2a2a4a;min-height:32px;}
-.ind-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-
-/* メインエリア */
+.indicator{display:flex;align-items:center;gap:5px;padding:4px 10px;background:#16213e;font-size:11px;color:#ccc;flex-shrink:0;border-bottom:1px solid #2a2a4a;min-height:30px;overflow-x:auto;}
+.indicator::-webkit-scrollbar{display:none;}
+.ind-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mode-btn,.quick-btn{padding:3px 8px;border-radius:16px;border:none;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.quick-btn{background:#2a2a4a;color:#888;}
+.sz-btn{padding:2px 6px;border:1.5px solid #444;border-radius:5px;background:#2a2a4a;color:#888;font-size:10px;font-weight:700;cursor:pointer;min-width:20px;text-align:center;}
+.sz-btn.active{border-color:#f5a623;color:#f5a623;background:#3a3a5a;}
+.zc-btn{padding:2px 7px;border:none;border-radius:5px;background:#2a2a4a;color:#ccc;font-size:12px;cursor:pointer;}
+.zc-slider{width:55px;height:4px;accent-color:#f5a623;cursor:pointer;}
+.zc-label{font-size:10px;color:#888;min-width:32px;}
+.reset-btn{padding:2px 7px;border-radius:14px;border:none;font-size:10px;cursor:pointer;background:#3a3a5a;color:#ccc;}
+/* メイン */
 .main{display:flex;flex:1;overflow:hidden;min-height:0;}
-
-/* 左サイドバー */
-.sidebar{width:100px;background:#16213e;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #2a2a4a;overflow-y:auto;}
-.sb-btn{width:100%;padding:14px 6px;border:none;background:transparent;color:#777;font-size:10px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;border-bottom:1px solid #2a2a4a;transition:all .15s;position:relative;}
-.sb-btn .sb-icon{font-size:22px;}
+.sidebar{width:60px;background:#16213e;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #2a2a4a;overflow-y:auto;}
+.sb-btn{width:100%;padding:10px 4px;border:none;background:transparent;color:#777;font-size:9px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:1px solid #2a2a4a;position:relative;}
+.sb-btn .sb-icon{font-size:18px;}
 .sb-btn.active{background:#2a2a4a;color:#f5a623;}
 .sb-btn.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#f5a623;border-radius:0 3px 3px 0;}
-.badge-dot{position:absolute;top:8px;right:14px;background:#e94560;color:white;font-size:8px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;}
+.badge-dot{position:absolute;top:7px;right:12px;background:#e94560;color:white;font-size:8px;font-weight:700;min-width:15px;height:15px;border-radius:8px;display:none;align-items:center;justify-content:center;padding:0 3px;}
 .badge-dot.show{display:flex;}
-
-/* キャンバスエリア */
+/* キャンバス */
 .canvas-area{flex:1;position:relative;overflow:hidden;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:0;}
 .upload-hint{position:absolute;display:flex;flex-direction:column;align-items:center;gap:14px;color:#555;z-index:3;pointer-events:none;text-align:center;}
-.upload-hint .uh-icon{font-size:56px;}
-.upload-hint p{font-size:15px;line-height:1.8;}
+.upload-hint .uh-icon{font-size:52px;}
 .canvas-container{position:relative;box-shadow:0 8px 40px rgba(0,0,0,.5);flex-shrink:0;}
 #bgCanvas,#markerCanvas{position:absolute;top:0;left:0;display:block;}
 #bgCanvas{z-index:1;}
 #markerCanvas{z-index:2;cursor:crosshair;}
-
 /* ドロワー */
-.drawer{position:fixed;top:0;bottom:0;left:100px;width:210px;background:#16213e;z-index:150;transform:translateX(-320px);transition:transform .28s cubic-bezier(.34,1.56,.64,1);overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.4);border-right:1px solid #2a2a4a;}
+.drawer{position:fixed;top:0;bottom:0;left:60px;width:200px;background:#16213e;z-index:150;transform:translateX(-265px);transition:transform .28s cubic-bezier(.34,1.56,.64,1);overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.4);border-right:1px solid #2a2a4a;}
 .drawer.open{transform:translateX(0);}
-.drawer-overlay{position:fixed;top:0;bottom:0;left:100px;right:0;background:rgba(0,0,0,.3);z-index:140;display:none;}
+.drawer-overlay{position:fixed;top:0;bottom:0;left:60px;right:0;background:rgba(0,0,0,.3);z-index:140;display:none;}
 .drawer-overlay.show{display:block;}
 .dw-content{padding:14px 12px 24px;}
 .dw-title{font-size:10px;font-weight:700;color:#888;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #2a2a4a;}
-
-/* 不具合ボタン */
-.defect-grid{display:flex;flex-direction:column;gap:7px;}
-.def-btn{width:100%;padding:11px 10px;border:2px solid transparent;border-radius:10px;background:#2a2a4a;color:white;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;text-align:left;transition:all .15s;}
-.def-btn:active,.def-btn.active{border-color:currentColor;background:#3a3a5a;}
-.def-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
-
-/* 集計 */
-.count-list{display:flex;flex-direction:column;gap:7px;}
-.count-card{background:#111128;border-radius:9px;padding:10px 11px;}
-.count-card-header{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
-.count-dot{width:10px;height:10px;border-radius:50%;}
+.def-btn{width:100%;padding:10px;border:2px solid transparent;border-radius:10px;background:#2a2a4a;color:white;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+.def-btn.active{border-color:currentColor;background:#3a3a5a;}
+.def-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.count-card{background:#111128;border-radius:9px;padding:9px 11px;margin-bottom:6px;}
+.count-card-header{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.count-dot{width:9px;height:9px;border-radius:50%;}
 .count-label{font-size:11px;color:#bbb;flex:1;}
-.count-val{font-size:15px;font-weight:700;color:white;padding-left:16px;}
+.count-val{font-size:14px;font-weight:700;padding-left:15px;}
 .action-row{display:flex;gap:8px;margin-top:12px;}
-.act-btn{flex:1;padding:11px;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;}
+.act-btn{flex:1;padding:10px;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;}
 .btn-undo{background:#3a3a5a;color:#ddd;}
 .btn-clear{background:#4a1a2a;color:#f88;}
-
 /* ポップアップ */
-.popup{position:fixed;background:white;border-radius:18px;padding:18px;box-shadow:0 8px 40px rgba(0,0,0,.35);z-index:300;width:min(400px,90vw);left:50%;top:50%;transform:translate(-50%,-50%);display:none;color:#1a1a2e;}
+.popup{position:fixed;background:white;border-radius:18px;padding:18px;box-shadow:0 8px 40px rgba(0,0,0,.4);z-index:300;width:min(380px,90vw);left:50%;top:50%;transform:translate(-50%,-50%);display:none;color:#1a1a2e;}
 .popup h4{font-size:15px;font-weight:700;margin-bottom:12px;}
-.pf-label{font-size:10px;font-weight:700;color:#888;letter-spacing:.05em;margin-bottom:4px;}
+.pf-label{font-size:10px;font-weight:700;color:#888;margin-bottom:4px;}
 .pf-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
 .pf-row input,.pf-row select,.pf-row textarea{width:100%;padding:9px 11px;border:1.5px solid #ddd;border-radius:9px;font-size:15px;font-family:inherit;background:#fafafa;}
-.pf-row input:focus,.pf-row select:focus,.pf-row textarea:focus{outline:none;border-color:#1a1a2e;background:white;}
-.pf-row textarea{height:52px;resize:none;font-size:13px;}
-.unit-lbl{font-size:12px;color:#888;white-space:nowrap;padding:0 4px;}
+.pf-row textarea{height:50px;resize:none;font-size:13px;}
+.unit-lbl{font-size:12px;color:#888;white-space:nowrap;}
 .popup-btns{display:flex;gap:8px;margin-top:12px;}
 .pb-cancel{flex:1;padding:11px;background:#eee;color:#666;border:none;border-radius:10px;font-size:13px;cursor:pointer;}
 .pb-del{flex:1;padding:11px;background:#fde;color:#c00;border:none;border-radius:10px;font-size:13px;cursor:pointer;display:none;}
 .pb-save{flex:1;padding:11px;background:#1a1a2e;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;}
-
 /* レポートモーダル */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
-.modal{background:white;border-radius:18px;padding:22px;width:92%;max-width:640px;max-height:88vh;overflow-y:auto;color:#1a1a2e;}
-.modal h2{font-size:16px;font-weight:700;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1a1a2e;}
+.modal{background:white;border-radius:18px;padding:20px;width:92%;max-width:640px;max-height:88vh;overflow-y:auto;color:#1a1a2e;}
+.modal h2{font-size:15px;font-weight:700;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #1a1a2e;}
 .rep-tabs{display:flex;gap:6px;margin-bottom:12px;}
 .rep-tab{flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
 .rep-tab.active{background:#1a1a2e;color:white;}
 .rep-tab:not(.active){background:#eee;color:#555;}
 .rep-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;}
-.rep-table th{background:#1a1a2e;color:white;padding:9px 10px;text-align:left;font-size:11px;}
-.rep-table td{padding:9px 10px;border-bottom:1px solid #eee;}
+.rep-table th{background:#1a1a2e;color:white;padding:8px 10px;text-align:left;font-size:11px;}
+.rep-table td{padding:8px 10px;border-bottom:1px solid #eee;}
 .rep-table tr:nth-child(even) td{background:#f8f8f8;}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
-.mb-btn{padding:10px 18px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;}
-.mb-close{background:#eee;color:#555;}
-.mb-png{background:#27ae60;color:white;}
-.mb-print{background:#1a1a2e;color:white;}
-.mb-rpt{background:#2980b9;color:white;}
+.modal-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.mb-btn{padding:9px 13px;border:none;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;}
 .badge{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;}
-
-/* ズームコントロール */
-.zoom-ctrl{display:flex;align-items:center;gap:4px;margin-left:auto;}
-.zc-btn{padding:2px 8px;border:none;border-radius:6px;background:#2a2a4a;color:#ccc;font-size:13px;cursor:pointer;}
-.zc-slider{width:60px;height:4px;accent-color:#f5a623;}
-.zc-label{font-size:10px;color:#888;min-width:34px;}
-.mode-btn{padding:3px 9px;border-radius:18px;border:none;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;}
-.reset-btn{padding:3px 7px;border-radius:18px;border:none;font-size:10px;font-weight:700;cursor:pointer;background:#3a3a5a;color:#ccc;flex-shrink:0;}
-.sz-btn{padding:2px 6px;border:1.5px solid #444;border-radius:5px;background:#2a2a4a;color:#888;font-size:10px;font-weight:700;cursor:pointer;touch-action:manipulation;min-width:22px;text-align:center;}
-.sz-btn.active{border-color:#f5a623;color:#f5a623;background:#3a3a5a;}
 </style>
 </head>
 <body>
-
-<!-- ===== 現場選択画面 ===== -->
+<!-- 現場選択 -->
 <div id="projectScreen">
-  <div class="ps-header">
-    <h2>補修図面 <span>現場一覧</span></h2>
-  </div>
+  <div class="ps-header"><h2>補修図面 <span>現場一覧</span></h2></div>
   <div class="ps-list" id="psList"></div>
-  <button class="ps-new" onclick="openNewProjectModal()">＋ 新しい現場を追加</button>
+  <button class="ps-new" onclick="openNewProjModal()">＋ 新しい現場を追加</button>
+</div>
 
 <!-- 現場名入力モーダル -->
 <div id="newProjModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;align-items:center;justify-content:center;">
-  <div style="background:#1a1a2e;border-radius:18px;padding:24px;width:min(360px,88vw);">
-    <p style="font-size:15px;font-weight:700;margin-bottom:14px;color:white;">現場名を入力</p>
-    <input id="newProjName" type="text" placeholder="例）〇〇マンション外壁補修"
-      style="width:100%;padding:12px 14px;border-radius:10px;border:none;font-size:15px;font-family:inherit;background:#2a2a4a;color:white;margin-bottom:14px;"
-      onkeydown="if(event.key==='Enter')confirmNewProject()">
+  <div style="background:#1a1a2e;border-radius:16px;padding:22px;width:min(360px,88vw);">
+    <p style="font-size:14px;font-weight:700;margin-bottom:12px;">現場名を入力</p>
+    <input id="newProjName" type="text" placeholder="例）〇〇マンション外壁補修" onkeydown="if(event.key==='Enter')confirmNewProj()"
+      style="width:100%;padding:11px 13px;border-radius:10px;border:none;font-size:15px;font-family:inherit;background:#2a2a4a;color:white;margin-bottom:14px;">
     <div style="display:flex;gap:10px;">
-      <button onclick="closeNewProjectModal()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;touch-action:manipulation;">キャンセル</button>
-      <button onclick="confirmNewProject()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">作成</button>
+      <button onclick="document.getElementById('newProjModal').style.display='none'" style="flex:1;padding:11px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;">キャンセル</button>
+      <button onclick="confirmNewProj()" style="flex:1;padding:11px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;">作成</button>
     </div>
   </div>
 </div>
-</div>
 
-<!-- ===== メインアプリ ===== -->
+<!-- ヘッダー -->
 <header>
-  <div class="hd-left">
+  <div style="display:flex;align-items:center;">
     <span class="hd-title">補修図面 <span>M</span></span>
     <span class="proj-badge" id="projBadge" onclick="openProjectScreen()">現場</span>
   </div>
@@ -193,45 +166,47 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
   <button class="dm-btn" onclick="savePNG();closeMenu()">⬇️ PNG保存</button>
   <button class="dm-btn" onclick="printDrawing();closeMenu()">🖨 図面印刷</button>
   <button class="dm-btn" onclick="showReport();closeMenu()">📋 レポート</button>
-  <div style="border-top:1px solid #2a2a4a;margin:4px 0;"></div>
-  <button class="dm-btn" style="color:#f5a623;" onclick="backupProject();closeMenu()">💾 データ保存（バックアップ）</button>
-  <button class="dm-btn" style="color:#f5a623;" onclick="document.getElementById('restoreInput').click();closeMenu()">📥 データ読み込み（復元）</button>
+  <div class="dm-sep"></div>
+  <button class="dm-btn" style="color:#f5a623;" onclick="backupProject();closeMenu()">💾 データ保存</button>
+  <button class="dm-btn" style="color:#f5a623;" onclick="document.getElementById('restoreInput').click();closeMenu()">📥 データ読み込み</button>
   <button class="dm-btn" style="color:#27ae60;" onclick="saveReportExcel();closeMenu()">📊 Excelレポート出力</button>
+  <button class="dm-btn" style="color:#2980b9;" onclick="saveReportDocx();closeMenu()">📝 Word出力</button>
 </div>
 <div id="menuOverlay" onclick="closeMenu()"></div>
-<input type="file" id="fileInput" accept="image/*,application/pdf" onchange="loadFile(event)">
-<input type="file" id="restoreInput" accept=".json" onchange="restoreProject(event)" style="display:none">
+<input type="file" id="fileInput" accept="image/*" onchange="loadFile(event)" style="display:none">
+<input type="file" id="restoreInput" accept=".json,application/json,text/plain" onchange="restoreProject(event)" style="display:none">
 
-<!-- 図面タブバー -->
+<!-- タブバー -->
 <div class="sheet-bar" id="sheetBar">
-  <button class="s-add" onclick="document.getElementById('fileInput').click()" title="図面を追加">＋</button>
+  <button class="s-add" onclick="document.getElementById('fileInput').click()">＋</button>
 </div>
 
-<!-- インジケーター -->
-<div class="indicator" id="indicator">
-  <div class="ind-dot" id="indDot" style="background:#27ae60"></div>
-  <span id="indType">ひび割れ</span>
-  <button class="mode-btn" id="modeBtn" onclick="toggleMode()" style="background:#27ae60;color:white;">✏️ マーキング</button>
-  <!-- 連続入力モード -->
-  <button class="mode-btn" id="quickBtn" onclick="toggleQuickMode()" style="background:#2a2a4a;color:#888;margin-left:4px;">⚡ 連続</button>
-  <!-- マーカーサイズ選択 -->
-  <div style="display:flex;align-items:center;gap:3px;margin-left:6px;flex-shrink:0;">
-    <span style="font-size:9px;color:#888;">サイズ</span>
-    <button class="sz-btn" data-sz="1" onclick="selectMarkerSize(this)">1</button>
-    <button class="sz-btn" data-sz="2" onclick="selectMarkerSize(this)">2</button>
-    <button class="sz-btn active" data-sz="3" onclick="selectMarkerSize(this)">3</button>
+<!-- インジケーター（2段レイアウト） -->
+<div style="background:#16213e;border-bottom:1px solid #2a2a4a;flex-shrink:0;">
+  <!-- 1段目：種別・モード・連続 -->
+  <div style="display:flex;align-items:center;gap:5px;padding:4px 10px;min-height:32px;">
+    <div class="ind-dot" id="indDot" style="background:#27ae60;width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>
+    <span id="indType" style="font-size:11px;color:#ccc;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">ひび割れ</span>
+    <button class="mode-btn" id="modeBtn" onclick="toggleMode()" style="background:#27ae60;color:white;padding:4px 10px;border-radius:16px;border:none;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">✏️ マーキング</button>
+    <button id="quickBtn" onclick="toggleQuickMode()" style="background:#2a2a4a;color:#888;padding:4px 10px;border-radius:16px;border:none;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">⚡ 連続</button>
   </div>
-  <div class="zoom-ctrl">
-    <button class="zc-btn" onclick="changeZoom(-.15)">−</button>
-    <input class="zc-slider" type="range" id="zoomSlider" min=".1" max="5" step=".05" value="1" oninput="viewScale=+this.value;applyTransform()">
-    <button class="zc-btn" onclick="changeZoom(.15)">＋</button>
-    <span class="zc-label" id="zoomLbl">100%</span>
-    <button class="reset-btn" onclick="resetView()">🔄</button>
+  <!-- 2段目：サイズ・ズーム -->
+  <div style="display:flex;align-items:center;gap:4px;padding:3px 10px 4px;border-top:1px solid #1a1a2e;">
+    <span style="font-size:9px;color:#666;flex-shrink:0;">サイズ</span>
+    <button class="sz-btn" data-sz="1" onclick="selectSize(this)">1</button>
+    <button class="sz-btn" data-sz="2" onclick="selectSize(this)">2</button>
+    <button class="sz-btn active" data-sz="3" onclick="selectSize(this)">3</button>
+    <div style="display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0;">
+      <button class="zc-btn" onclick="changeZoom(-.15)">−</button>
+      <input class="zc-slider" type="range" id="zoomSlider" min=".1" max="5" step=".05" value="1" oninput="viewScale=+this.value;applyTransform()" style="width:50px;height:4px;accent-color:#f5a623;">
+      <button class="zc-btn" onclick="changeZoom(.15)">＋</button>
+      <span id="zoomLbl" style="font-size:10px;color:#888;min-width:32px;">100%</span>
+      <button onclick="resetView()" style="padding:2px 7px;border-radius:14px;border:none;font-size:10px;cursor:pointer;background:#3a3a5a;color:#ccc;">🔄</button>
+    </div>
   </div>
 </div>
 
 <div class="main">
-  <!-- サイドバー -->
   <div class="sidebar">
     <button class="sb-btn active" id="sb-defect" onclick="toggleDrawer('dwDefect','sb-defect')">
       <span class="sb-icon">🔍</span>種別
@@ -241,12 +216,10 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
       <span class="badge-dot" id="totalBadge">0</span>
     </button>
   </div>
-
-  <!-- キャンバス -->
   <div class="canvas-area" id="canvasArea">
     <div class="upload-hint" id="uploadHint">
       <div class="uh-icon">🏗️</div>
-      <p>図面を開く から<br>画像を追加してください</p>
+      <p style="font-size:14px;line-height:1.8;">「図面を追加」から<br>画像を読み込んでください</p>
     </div>
     <div class="canvas-container" id="canvasContainer" style="width:400px;height:300px;">
       <canvas id="bgCanvas" width="400" height="300"></canvas>
@@ -255,35 +228,16 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
   </div>
 </div>
 
-<!-- ドロワーオーバーレイ -->
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeAllDrawers()"></div>
-
-<!-- 種別ドロワー -->
-<div class="drawer" id="dwDefect">
-  <div class="dw-content">
-    <div class="dw-title">不具合種別</div>
-    <div class="defect-grid" id="defectGrid"></div>
-  </div>
-</div>
-
-<!-- 集計ドロワー -->
-<div class="drawer" id="dwCount">
-  <div class="dw-content">
-    <div class="dw-title">集計</div>
-    <div class="count-list" id="countList"></div>
-    <div class="action-row">
-      <button class="act-btn btn-undo" onclick="undoLast()">↩ 戻す</button>
-      <button class="act-btn btn-clear" onclick="clearAll()">🗑 全削除</button>
-    </div>
-  </div>
-</div>
+<div class="drawer" id="dwDefect"><div class="dw-content"><div class="dw-title">不具合種別</div><div id="defectGrid"></div></div></div>
+<div class="drawer" id="dwCount"><div class="dw-content"><div class="dw-title">集計</div><div id="countList"></div><div class="action-row"><button class="act-btn btn-undo" onclick="undoLast()">↩ 戻す</button><button class="act-btn btn-clear" onclick="clearAll()">🗑 全削除</button></div></div></div>
 
 <!-- 入力ポップアップ -->
 <div class="popup" id="popup">
   <h4 id="popTitle">📝 補修箇所</h4>
   <div id="typeSelectWrap" style="display:none;margin-bottom:10px;">
     <div class="pf-label">種別変更</div>
-    <div class="pf-row"><select id="editTypeSelect" onchange="onEditTypeChange()"></select></div>
+    <div class="pf-row"><select id="editTypeSelect"></select></div>
   </div>
   <div class="pf-label" id="valLabel">数量</div>
   <div class="pf-row">
@@ -312,617 +266,367 @@ header{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;justi
       <tbody id="repBody"></tbody>
     </table>
     <div class="modal-btns">
-      <button class="mb-btn mb-close" onclick="closeReport()">閉じる</button>
-      <button class="mb-btn mb-png" onclick="savePNG()">⬇️ 図面PNG</button>
-      <button class="mb-btn mb-print" onclick="printDrawing()">🖨 図面</button>
+      <button class="mb-btn" style="background:#eee;color:#555;" onclick="closeReport()">閉じる</button>
+      <button class="mb-btn" style="background:#27ae60;color:white;" onclick="savePNG()">⬇️ 図面PNG</button>
+      <button class="mb-btn" style="background:#1a1a2e;color:white;" onclick="printDrawing()">🖨 図面印刷</button>
       <button class="mb-btn" style="background:#8e44ad;color:white;" onclick="saveReportPNG()">⬇️ レポートPNG</button>
-      <button class="mb-btn" style="background:#27ae60;color:white;" onclick="saveReportExcel()">📊 Excel出力</button>
-      <button class="mb-btn" style="background:#2980b9;color:white;" onclick="saveReportDocx()">📝 Word出力</button>
-      <button class="mb-btn mb-rpt" onclick="printReport()">🖨 レポート印刷</button>
-    </div>
-  </div>
-</div>
+      <button class="mb-btn" style="background:#e67e22;color:white;" onclick="printReport()">🖨 レポート印刷</button>
+      <button class="mb-btn" style="background:#27ae60;color:white;" onclick="saveReportExcel()">📊 Excel</button>
+      <button class="mb-btn" style="background:#2980b9;color:white;" onclick="saveReportDocx()">📝 Word</button>
     </div>
   </div>
 </div>
 
 <script>
+'use strict';
 // ===== 定数 =====
-const DEFECTS = {
-  crack:   { label:'ひび割れ',        color:'#27ae60', shape:'wave',     unit:'m',   unitLabel:'m' },
-  crack03: { label:'ひび割れ0.3↑',   color:'#1a1a1a', shape:'wave',     unit:'m',   unitLabel:'m' },
-  peel:    { label:'剥離・浮き',      color:'#e94560', shape:'circle',   unit:'m2',  unitLabel:'㎡' },
-  inject:  { label:'浮き注入',        color:'#e67e22', shape:'rect',     unit:'pc',  unitLabel:'穴' },
-  burst:   { label:'欠損・爆裂',      color:'#2980b9', shape:'triangle', unit:'pc',  unitLabel:'箇所' },
-  float:   { label:'タイル浮き',      color:'#8e44ad', shape:'rect',     unit:'m2',  unitLabel:'㎡' },
-  tile:    { label:'タイル貼替',      color:'#f39c12', shape:'rect',     unit:'mai', unitLabel:'枚' },
-  other:   { label:'その他',          color:'#7f8c8d', shape:'circle',   unit:'pc',  unitLabel:'箇所' },
+const DEFECTS={
+  crack:  {label:'ひび割れ',    color:'#27ae60',shape:'wave',    unit:'m',  unitLabel:'m'},
+  crack03:{label:'ひび割れ0.3↑',color:'#222222',shape:'wave',    unit:'m',  unitLabel:'m'},
+  peel:   {label:'剥離・浮き',  color:'#e94560',shape:'circle',  unit:'m2', unitLabel:'㎡'},
+  inject: {label:'浮き注入',    color:'#e67e22',shape:'rect',    unit:'pc', unitLabel:'穴'},
+  burst:  {label:'欠損・爆裂',  color:'#2980b9',shape:'triangle',unit:'pc', unitLabel:'箇所'},
+  float:  {label:'タイル浮き',  color:'#8e44ad',shape:'rect',    unit:'m2', unitLabel:'㎡'},
+  tile:   {label:'タイル貼替',  color:'#f39c12',shape:'rect',    unit:'mai',unitLabel:'枚'},
+  other:  {label:'その他',      color:'#7f8c8d',shape:'circle',  unit:'pc', unitLabel:'箇所'},
 };
 
 // ===== 状態 =====
-let currentType = 'crack';
-let markerSize = 3; // デフォルト3px
-let markers = [];
-let pendingMark = null;
-let editingIdx = null;
-let imageLoaded = false;
-let mode = 'mark';
-let viewX=0, viewY=0, viewScale=1, viewAngle=0;
-let sheets = [];
-let currentSheetIdx = -1;
-let currentProjectId = null;
+let currentType='crack', markerSize=3, markers=[];
+let pendingMark=null, editingIdx=null, imageLoaded=false;
+let mode='mark', quickMode=false, quickLastValue='';
+let viewX=0, viewY=0, viewScale=1;
+let sheets=[], currentSheetIdx=-1, currentProjectId=null;
 
-const bgCanvas = document.getElementById('bgCanvas');
-const markerCanvas = document.getElementById('markerCanvas');
-const bgCtx = bgCanvas.getContext('2d');
-const mCtx = markerCanvas.getContext('2d');
-const container = document.getElementById('canvasContainer');
+const bgCanvas=document.getElementById('bgCanvas');
+const markerCanvas=document.getElementById('markerCanvas');
+const bgCtx=bgCanvas.getContext('2d');
+const mCtx=markerCanvas.getContext('2d');
+const container=document.getElementById('canvasContainer');
 
-// ===== 種別ボタン生成 =====
-(function buildDefectBtns(){
-  const grid = document.getElementById('defectGrid');
-  const sel = document.getElementById('editTypeSelect');
+// ===== 種別ボタン =====
+(function(){
+  const icons={wave:'〰',circle:'⭕',triangle:'△',rect:'⬜'};
+  const grid=document.getElementById('defectGrid');
+  const sel=document.getElementById('editTypeSelect');
   Object.entries(DEFECTS).forEach(([k,d])=>{
-    const icons = {wave:'〰',circle:'⭕',triangle:'△',rect:'⬜'};
-    const ic = icons[d.shape]||'○';
-    const btn = document.createElement('button');
-    btn.className='def-btn'+(k==='crack'?' active':'');
-    btn.dataset.type=k;
-    btn.innerHTML=`<div class="def-dot" style="background:${d.color}"></div>${d.label}${ic}`;
-    btn.onclick=()=>selectDefect(k);
-    grid.appendChild(btn);
-    const opt=document.createElement('option');
-    opt.value=k; opt.textContent=d.label+ic;
-    sel.appendChild(opt);
+    const b=document.createElement('button');
+    b.className='def-btn'+(k==='crack'?' active':'');
+    b.dataset.type=k;
+    b.innerHTML=`<div class="def-dot" style="background:${d.color}"></div>${d.label}${icons[d.shape]}`;
+    b.onclick=()=>selectDefect(k);
+    grid.appendChild(b);
+    const o=document.createElement('option');
+    o.value=k;o.textContent=d.label+icons[d.shape];
+    sel.appendChild(o);
   });
 })();
 
-// ===== 現場管理 =====
-function loadProjects(){try{return JSON.parse(localStorage.getItem('hp_projects')||'[]');}catch{return[];}}
-function saveProjects(p){try{localStorage.setItem('hp_projects',JSON.stringify(p));}catch{showSaveError();}}
-
-// ===== IndexedDB（画像保存用・容量制限なし） =====
-let idb = null;
-
+// ===== IndexedDB =====
+let idb=null;
 function openIDB(){
-  return new Promise((resolve, reject)=>{
-    if(idb){ resolve(idb); return; }
-    const req = indexedDB.open('hoshu_map_db', 1);
-    req.onupgradeneeded = e=>{
-      const db = e.target.result;
-      if(!db.objectStoreNames.contains('images')){
-        db.createObjectStore('images');
-      }
-    };
-    req.onsuccess = e=>{ idb=e.target.result; resolve(idb); };
-    req.onerror = e=>{ reject(e); };
+  return new Promise((res,rej)=>{
+    if(idb){res(idb);return;}
+    const req=indexedDB.open('hoshu_map_v2',1);
+    req.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('images'))e.target.result.createObjectStore('images');};
+    req.onsuccess=e=>{idb=e.target.result;res(idb);};
+    req.onerror=e=>rej(e);
   });
 }
-
-async function saveSheetImage(projId, sheetIdx, imageData){
-  try{
-    const db = await openIDB();
-    const tx = db.transaction('images','readwrite');
-    tx.objectStore('images').put(imageData, `${projId}_${sheetIdx}`);
-    return new Promise(r=>{ tx.oncomplete=()=>r(true); tx.onerror=()=>r(false); });
-  } catch(e){ return false; }
+async function saveImg(pid,idx,data){
+  try{const db=await openIDB();const tx=db.transaction('images','readwrite');tx.objectStore('images').put(data,`${pid}_${idx}`);return new Promise(r=>{tx.oncomplete=()=>r(true);tx.onerror=()=>r(false);});}catch{return false;}
+}
+async function loadImg(pid,idx){
+  try{const db=await openIDB();return new Promise(r=>{const req=db.transaction('images','readonly').objectStore('images').get(`${pid}_${idx}`);req.onsuccess=()=>r(req.result||null);req.onerror=()=>r(null);});}catch{return null;}
+}
+async function deleteImgs(pid){
+  try{const db=await openIDB();const tx=db.transaction('images','readwrite');const store=tx.objectStore('images');const keys=await new Promise(r=>{const req=store.getAllKeys();req.onsuccess=()=>r(req.result||[]);req.onerror=()=>r([]);});keys.filter(k=>k.startsWith(pid+'_')).forEach(k=>store.delete(k));}catch{}
 }
 
-async function loadSheetImage(projId, sheetIdx){
-  try{
-    const db = await openIDB();
-    return new Promise((resolve)=>{
-      const tx = db.transaction('images','readonly');
-      const req = tx.objectStore('images').get(`${projId}_${sheetIdx}`);
-      req.onsuccess = ()=>resolve(req.result||null);
-      req.onerror = ()=>resolve(null);
-    });
-  } catch(e){ return null; }
+// ===== 現場管理 =====
+const LP=id=>{ try{return JSON.parse(localStorage.getItem(id)||'null');}catch{return null;}};
+const SP=(id,v)=>{ try{localStorage.setItem(id,JSON.stringify(v));return true;}catch{return false;}};
+function loadProjs(){return LP('hp_projects')||[];}
+function saveProjs(p){SP('hp_projects',p);}
+function loadPD(id){return LP('hp_'+id)||null;}
+function savePD(id,data){
+  return SP('hp_'+id,{sheets:data.sheets.map(s=>({name:s.name,markers:s.markers})),currentSheetIdx:data.currentSheetIdx});
 }
 
-async function deleteSheetImages(projId){
-  try{
-    const db = await openIDB();
-    const tx = db.transaction('images','readwrite');
-    const store = tx.objectStore('images');
-    const keys = await new Promise(r=>{
-      const req=store.getAllKeys();
-      req.onsuccess=()=>r(req.result||[]);
-      req.onerror=()=>r([]);
-    });
-    keys.filter(k=>k.startsWith(projId+'_')).forEach(k=>store.delete(k));
-  } catch(e){}
-}
-
-// マーカーデータのみLocalStorageに保存（軽量）
-function loadProjData(id){try{return JSON.parse(localStorage.getItem('hp_'+id)||'null');}catch{return null;}}
-function saveProjData(id,data){
-  const lite={
-    sheets:data.sheets.map(s=>({name:s.name,markers:s.markers})),
-    currentSheetIdx:data.currentSheetIdx
-  };
-  try{
-    localStorage.setItem('hp_'+id,JSON.stringify(lite));
-    return true;
-  } catch(e){
-    showSaveError();
-    return false;
-  }
-}
-
-function showSaveError(){
-  showToast('⚠️ 保存エラーが発生しました。', '#e94560');
-}
-
-// 保存状態トースト
-function showToast(msg, color='#27ae60'){
-  const old=document.getElementById('toast');
-  if(old)old.remove();
-  const t=document.createElement('div');
-  t.id='toast';
-  t.style.cssText=`position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:${color};color:white;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;z-index:9000;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3);`;
-  t.textContent=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2500);
-}
-
-// 保存インジケーター更新
-function setSaveStatus(status){
-  // status: 'saving' | 'saved' | 'error'
-  const badge=document.getElementById('projBadge');
-  if(!badge)return;
-  const icons={'saving':'💾','saved':'✅','error':'⚠️'};
-  const name=currentProjectId?loadProjects().find(p=>p.id===currentProjectId)?.name||'現場':'現場';
-  badge.textContent=(icons[status]||'')+ ' ' +name;
-}
-
-function renderProjectList(){
-  const projects=loadProjects();
-  const list=document.getElementById('psList');
-  list.innerHTML='';
-  if(projects.length===0){
-    list.innerHTML='<div class="ps-empty">現場がまだありません<br>下の「＋」ボタンから追加してください</div>';
-    return;
-  }
+function renderProjList(){
+  const projects=loadProjs();
+  const list=document.getElementById('psList');list.innerHTML='';
+  if(!projects.length){list.innerHTML='<div class="ps-empty">現場がまだありません<br>下の「＋」から追加してください</div>';return;}
   projects.forEach(p=>{
-    const data=loadProjData(p.id);
-    const sc=data?.sheets?.length||0;
-    const mc=data?.sheets?.reduce((s,sh)=>s+(sh.markers?.length||0),0)||0;
-    const card=document.createElement('div');
-    card.className='ps-card';
-    card.innerHTML=`<div class="ps-icon">🏗️</div><div class="ps-info"><div class="ps-name">${p.name}</div><div class="ps-meta">図面 ${sc}枚 ｜ マーキング ${mc}件 ｜ ${p.date}</div></div><button class="ps-del" style="background:#2a2a4a;color:#f5a623;" onclick="event.stopPropagation();renameProject('${p.id}')">✏️</button><button class="ps-del" onclick="event.stopPropagation();deleteProject('${p.id}')">削除</button>`;
+    const d=loadPD(p.id);
+    const sc=d?.sheets?.length||0;
+    const mc=d?.sheets?.reduce((s,sh)=>s+(sh.markers?.length||0),0)||0;
+    const card=document.createElement('div');card.className='ps-card';
+    card.innerHTML=`<div class="ps-icon">🏗️</div><div class="ps-info"><div class="ps-name">${p.name}</div><div class="ps-meta">図面 ${sc}枚 ｜ マーキング ${mc}件 ｜ ${p.date}</div></div><button class="ps-btn ps-edit" onclick="event.stopPropagation();renameProjDlg('${p.id}')">✏️</button><button class="ps-btn ps-del" onclick="event.stopPropagation();deleteProjConfirm('${p.id}')">削除</button>`;
     card.onclick=()=>openProject(p.id);
     list.appendChild(card);
   });
 }
 
-function renameProject(id){
-  const projects=loadProjects();
-  const proj=projects.find(p=>p.id===id);
-  if(!proj)return;
-  const old=document.getElementById('renameModal');
-  if(old)old.remove();
-  const modal=document.createElement('div');
-  modal.id='renameModal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;';
-  modal.innerHTML=`
-    <div style="background:#1a1a2e;border-radius:16px;padding:22px;width:min(340px,88vw);">
-      <p style="font-size:14px;font-weight:700;color:white;margin-bottom:12px;">🏗️ 現場名を変更</p>
-      <input id="renameInput" type="text" value="${proj.name}"
-        style="width:100%;padding:11px 13px;border-radius:10px;border:none;font-size:15px;font-family:inherit;background:#2a2a4a;color:white;margin-bottom:14px;"
-        onkeydown="if(event.key==='Enter')confirmRenameProject('${id}')">
-      <div style="display:flex;gap:10px;">
-        <button onclick="document.getElementById('renameModal').remove()"
-          style="flex:1;padding:11px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;touch-action:manipulation;">キャンセル</button>
-        <button onclick="confirmRenameProject('${id}')"
-          style="flex:1;padding:11px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">変更</button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  setTimeout(()=>{const input=document.getElementById('renameInput');input.focus();input.select();},100);
-}
-
-function confirmRenameProject(id){
-  const input=document.getElementById('renameInput');
-  const newName=input?.value?.trim();
-  if(!newName){showToast('名前を入力してください','#e94560');return;}
-  document.getElementById('renameModal')?.remove();
-  const projects=loadProjects();
-  const proj=projects.find(p=>p.id===id);
-  if(proj){
-    proj.name=newName;
-    saveProjects(projects);
-    if(currentProjectId===id) document.getElementById('projBadge').textContent=newName;
-    showToast(`✅ 「${newName}」に変更しました`);
-    renderProjectList();
-  }
-}
-
-function openNewProjectModal(){
+function openNewProjModal(){
   document.getElementById('newProjName').value='';
   document.getElementById('newProjModal').style.display='flex';
   setTimeout(()=>document.getElementById('newProjName').focus(),100);
 }
-function closeNewProjectModal(){
-  document.getElementById('newProjModal').style.display='none';
-}
-function confirmNewProject(){
+function confirmNewProj(){
   const name=document.getElementById('newProjName').value.trim();
-  if(!name){alert('現場名を入力してください');return;}
-  closeNewProjectModal();
-  createProject(name);
-}
-
-function createProject(name){
+  if(!name){toast('現場名を入力してください','#e94560');return;}
+  document.getElementById('newProjModal').style.display='none';
   const id='p'+Date.now();
-  const projects=loadProjects();
+  const projects=loadProjs();
   projects.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});
-  saveProjects(projects);
-  saveProjData(id,{sheets:[],currentSheetIdx:-1});
+  saveProjs(projects);savePD(id,{sheets:[],currentSheetIdx:-1});
   openProject(id);
 }
-
-async function openProject(id){
-  const projects=loadProjects();
-  const proj=projects.find(p=>p.id===id);
-  if(!proj)return;
-  currentProjectId=id;
-  document.getElementById('projBadge').textContent=proj.name;
-  document.getElementById('projectScreen').style.display='none';
-
-  const data=loadProjData(id)||{sheets:[],currentSheetIdx:-1};
-  // マーカーデータを復元（画像はswitchSheetで取得）
-  sheets=data.sheets.map(s=>({name:s.name,markers:s.markers||[]}));
-  currentSheetIdx=-1; // いったんリセット
-  markers=[];
-  imageLoaded=false;
-  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-  mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
-
-  const targetIdx=data.currentSheetIdx>=0?data.currentSheetIdx:(sheets.length>0?0:-1);
-
-  if(sheets.length>0&&targetIdx>=0){
-    await switchSheet(targetIdx);
-  } else {
-    document.getElementById('uploadHint').style.display='flex';
-    renderSheetTabs();
-    updateCounts();
-  }
-  setSaveStatus('saved');
-}
-
-function deleteProject(id){
-  showConfirm('この現場のデータをすべて削除しますか？',()=>{
-    saveProjects(loadProjects().filter(p=>p.id!==id));
-    try{localStorage.removeItem('hp_'+id);}catch{}
-    deleteSheetImages(id);
-    if(currentProjectId===id){
-      currentProjectId=null;
-      sheets=[];currentSheetIdx=-1;markers=[];imageLoaded=false;
-      bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-      mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
-      document.getElementById('uploadHint').style.display='flex';
-      document.getElementById('projBadge').textContent='現場';
-    }
-    renderProjectList();
+function renameProjDlg(id){
+  const p=loadProjs().find(p=>p.id===id);if(!p)return;
+  inputModal('🏗️ 現場名を変更',p.name,newName=>{
+    if(!newName)return;
+    const projects=loadProjs();const pp=projects.find(pp=>pp.id===id);
+    if(pp){pp.name=newName;saveProjs(projects);}
+    if(currentProjectId===id)document.getElementById('projBadge').textContent=newName;
+    toast(`✅ 「${newName}」に変更`);renderProjList();
   });
 }
-
+function deleteProjConfirm(id){
+  confirmModal('この現場のデータをすべて削除しますか？',async()=>{
+    saveProjs(loadProjs().filter(p=>p.id!==id));
+    try{localStorage.removeItem('hp_'+id);}catch{}
+    await deleteImgs(id);
+    if(currentProjectId===id){
+      currentProjectId=null;sheets=[];currentSheetIdx=-1;markers=[];imageLoaded=false;
+      bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+      document.getElementById('uploadHint').style.display='flex';
+      document.getElementById('projBadge').textContent='現場';
+      renderTabs();updateCounts();
+    }
+    renderProjList();
+  });
+}
+async function openProject(id){
+  const p=loadProjs().find(p=>p.id===id);if(!p)return;
+  currentProjectId=id;
+  document.getElementById('projBadge').textContent=p.name;
+  document.getElementById('projectScreen').style.display='none';
+  const data=loadPD(id)||{sheets:[],currentSheetIdx:-1};
+  sheets=data.sheets.map(s=>({name:s.name,markers:s.markers||[]}));
+  currentSheetIdx=-1;markers=[];imageLoaded=false;
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+  const idx=data.currentSheetIdx>=0?data.currentSheetIdx:(sheets.length>0?0:-1);
+  if(sheets.length&&idx>=0)await switchSheet(idx);
+  else{document.getElementById('uploadHint').style.display='flex';renderTabs();updateCounts();}
+}
 async function openProjectScreen(){
-  await saveCurrentProject();
-  renderProjectList();
+  await saveCurrent();renderProjList();
   document.getElementById('projectScreen').style.display='flex';
 }
 
+// ===== シート =====
 async function saveCurrentSheet(){
   if(currentSheetIdx<0||!sheets[currentSheetIdx])return;
-  // マーカーを必ず先に書き込む
   sheets[currentSheetIdx].markers=[...markers];
-  // 画像をIndexedDBに保存
-  if(imageLoaded&&currentProjectId){
-    try{
-      const imgData=bgCanvas.toDataURL('image/jpeg',.6);
-      await saveSheetImage(currentProjectId,currentSheetIdx,imgData);
-    }catch(e){console.warn('画像保存失敗',e);}
-  }
+  if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/jpeg',.65));}catch{}
 }
-
-async function saveCurrentProject(){
+async function saveCurrent(){
   if(!currentProjectId)return;
-  // 先にシートを保存
   await saveCurrentSheet();
-  setSaveStatus('saving');
-  // マーカーデータをLocalStorageに保存
-  const ok=saveProjData(currentProjectId,{sheets,currentSheetIdx});
-  // 日付更新
-  const projects=loadProjects();
-  const proj=projects.find(p=>p.id===currentProjectId);
-  if(proj){proj.date=new Date().toLocaleDateString('ja-JP');saveProjects(projects);}
-  setTimeout(()=>setSaveStatus(ok?'saved':'error'),300);
-  if(ok)showToast('💾 保存しました');
+  savePD(currentProjectId,{sheets,currentSheetIdx});
+  const ps=loadProjs();const p=ps.find(p=>p.id===currentProjectId);
+  if(p){p.date=new Date().toLocaleDateString('ja-JP');saveProjs(ps);}
+  toast('💾 保存しました');
 }
 
-// 30秒自動保存
-setInterval(async()=>{if(currentProjectId)await saveCurrentProject();},30000);
+setInterval(async()=>{if(currentProjectId)await saveCurrent();},30000);
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='hidden'&&currentProjectId)await saveCurrent();});
 
-// ===== 図面（シート）管理 =====
-function renderSheetTabs(){
-  const bar=document.getElementById('sheetBar');
-  bar.innerHTML='';
+function renderTabs(){
+  const bar=document.getElementById('sheetBar');bar.innerHTML='';
   sheets.forEach((s,i)=>{
     const tab=document.createElement('button');
     tab.className='s-tab'+(i===currentSheetIdx?' active':'');
-    tab.innerHTML=`📄 <span class="s-name">${s.name}</span> <span class="sx" onclick="event.stopPropagation();removeSheet(${i})">✕</span>`;
+    tab.innerHTML=`📄 <span>${s.name}</span> <span class="sx" onclick="event.stopPropagation();removeSheet(${i})">✕</span>`;
     tab.onclick=()=>switchSheet(i);
-    // 長押しで名前編集
-    let pressTimer=null;
-    tab.addEventListener('touchstart',()=>{
-      pressTimer=setTimeout(()=>renameSheet(i),600);
-    },{passive:true});
-    tab.addEventListener('touchend',()=>clearTimeout(pressTimer),{passive:true});
-    tab.addEventListener('touchmove',()=>clearTimeout(pressTimer),{passive:true});
-    // PC：ダブルクリックで名前編集
-    tab.addEventListener('dblclick',e=>{e.stopPropagation();renameSheet(i);});
+    let pt=null;
+    tab.addEventListener('touchstart',()=>{pt=setTimeout(()=>renameSheetDlg(i),600);},{passive:true});
+    tab.addEventListener('touchend',()=>clearTimeout(pt),{passive:true});
+    tab.addEventListener('touchmove',()=>clearTimeout(pt),{passive:true});
+    tab.addEventListener('dblclick',e=>{e.stopPropagation();renameSheetDlg(i);});
     bar.appendChild(tab);
   });
-  const add=document.createElement('button');
-  add.className='s-add';add.textContent='＋';
+  const add=document.createElement('button');add.className='s-add';add.textContent='＋';
   add.onclick=()=>document.getElementById('fileInput').click();
   bar.appendChild(add);
 }
-
-function renameSheet(idx){
-  const current=sheets[idx]?.name||'図面';
-  // 名前変更モーダル
-  const old=document.getElementById('renameModal');
-  if(old)old.remove();
-  const modal=document.createElement('div');
-  modal.id='renameModal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;';
-  modal.innerHTML=`
-    <div style="background:#1a1a2e;border-radius:16px;padding:22px;width:min(340px,88vw);">
-      <p style="font-size:14px;font-weight:700;color:white;margin-bottom:12px;">📄 図面名を変更</p>
-      <input id="renameInput" type="text" value="${current}"
-        style="width:100%;padding:11px 13px;border-radius:10px;border:none;font-size:15px;font-family:inherit;background:#2a2a4a;color:white;margin-bottom:14px;"
-        onkeydown="if(event.key==='Enter')confirmRename(${idx})">
-      <div style="display:flex;gap:10px;">
-        <button onclick="document.getElementById('renameModal').remove()"
-          style="flex:1;padding:11px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;touch-action:manipulation;">キャンセル</button>
-        <button onclick="confirmRename(${idx})"
-          style="flex:1;padding:11px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">変更</button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  setTimeout(()=>{
-    const input=document.getElementById('renameInput');
-    input.focus();input.select();
-  },100);
-}
-
-async function confirmRename(idx){
-  const input=document.getElementById('renameInput');
-  const newName=input?.value?.trim();
-  if(!newName){showToast('名前を入力してください','#e94560');return;}
-  document.getElementById('renameModal')?.remove();
-  sheets[idx].name=newName;
-  renderSheetTabs();
-  await saveCurrentProject();
-  showToast(`✅ 「${newName}」に変更しました`);
-}
-
-function saveCurrentSheet(){
-  if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
-    sheets[currentSheetIdx].markers=[...markers];
-    if(!sheets[currentSheetIdx].imageData && imageLoaded){
-      sheets[currentSheetIdx].imageData=bgCanvas.toDataURL('image/jpeg',.7);
-    }
-  }
-}
-
-async function switchSheet(idx){
-  // 切り替え前に現在シートを確実に保存
-  if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
-    sheets[currentSheetIdx].markers=[...markers];
-    if(imageLoaded&&currentProjectId){
-      try{
-        const imgData=bgCanvas.toDataURL('image/jpeg',.6);
-        await saveSheetImage(currentProjectId,currentSheetIdx,imgData);
-      }catch(e){}
-    }
-  }
-  // マーカーデータ保存
-  if(currentProjectId){
-    saveProjData(currentProjectId,{sheets,currentSheetIdx:idx});
-  }
-
-  currentSheetIdx=idx;
-  const s=sheets[idx];
-  markers=[...(s.markers||[])];
-
-  // IndexedDBから画像を取得
-  let imgData=null;
-  if(currentProjectId){
-    imgData=await loadSheetImage(currentProjectId,idx);
-  }
-
-  if(imgData){
-    const img=new Image();
-    img.onload=()=>{
-      setCanvasSize(img.width,img.height);
-      bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
-      imageLoaded=true;
-      document.getElementById('uploadHint').style.display='none';
-      redraw();updateCounts();
-      showToast(`📄 ${s.name}`,'#2980b9');
-    };
-    img.src=imgData;
-  } else {
-    imageLoaded=false;
-    bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-    mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
-    document.getElementById('uploadHint').style.display='flex';
-    redraw();updateCounts();
-  }
-  renderSheetTabs();
-}
-
-function removeSheet(idx){
-  showConfirm('この図面を削除しますか？', ()=>{
-    // 画像キーも削除
-    if(currentProjectId) try{localStorage.removeItem(`hp_img_${currentProjectId}_${idx}`);}catch{}
-    sheets.splice(idx,1);
-    // 残りのシートの画像キーを再インデックス
-    if(currentProjectId){
-      sheets.forEach((s,i)=>{
-        if(s.imageData) saveSheetImage(currentProjectId,i,s.imageData);
-      });
-    }
-    if(sheets.length===0){
-      currentSheetIdx=-1;markers=[];imageLoaded=false;
-      bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
-      mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
-      document.getElementById('uploadHint').style.display='flex';
-      renderSheetTabs();updateCounts();
-      if(currentProjectId) saveProjData(currentProjectId,{sheets,currentSheetIdx});
-    } else {
-      const newIdx=Math.min(idx,sheets.length-1);
-      currentSheetIdx=newIdx;
-      switchSheet(newIdx);
-    }
-    showToast('🗑 図面を削除しました','#e67e22');
+function renameSheetDlg(idx){
+  inputModal('📄 図面名を変更',sheets[idx]?.name||'図面',async n=>{
+    if(!n)return;sheets[idx].name=n;renderTabs();await saveCurrent();toast(`✅ 「${n}」に変更`);
   });
 }
-
-// 共通確認モーダル（confirmの代替）
-function showConfirm(msg, onOk){
-  const old=document.getElementById('confirmModal');
-  if(old)old.remove();
-  const modal=document.createElement('div');
-  modal.id='confirmModal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;';
-  modal.innerHTML=`
-    <div style="background:#1a1a2e;border-radius:16px;padding:24px;width:min(320px,88vw);color:white;">
-      <p style="font-size:15px;margin-bottom:20px;line-height:1.6;">${msg}</p>
-      <div style="display:flex;gap:10px;">
-        <button id="cfCancel" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;touch-action:manipulation;">キャンセル</button>
-        <button id="cfOk" style="flex:1;padding:12px;border:none;border-radius:10px;background:#e94560;color:white;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">削除</button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  document.getElementById('cfCancel').onclick=()=>modal.remove();
-  document.getElementById('cfOk').onclick=()=>{modal.remove();onOk();};
+async function switchSheet(idx){
+  if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
+    sheets[currentSheetIdx].markers=[...markers];
+    if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/jpeg',.65));}catch{}
+  }
+  if(currentProjectId)try{localStorage.setItem('hp_'+currentProjectId,JSON.stringify({sheets:sheets.map(s=>({name:s.name,markers:s.markers})),currentSheetIdx:idx}));}catch{}
+  currentSheetIdx=idx;
+  markers=[...(sheets[idx].markers||[])];
+  const imgData=currentProjectId?await loadImg(currentProjectId,idx):null;
+  if(imgData){
+    const img=new Image();
+    img.onload=()=>{setCanvasSize(img.width,img.height);bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);imageLoaded=true;document.getElementById('uploadHint').style.display='none';redraw();updateCounts();};
+    img.src=imgData;
+  } else {
+    imageLoaded=false;bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
+    document.getElementById('uploadHint').style.display='flex';redraw();updateCounts();
+  }
+  renderTabs();
+}
+function removeSheet(idx){
+  confirmModal('この図面を削除しますか？',async()=>{
+    sheets.splice(idx,1);
+    if(!sheets.length){currentSheetIdx=-1;markers=[];imageLoaded=false;bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);document.getElementById('uploadHint').style.display='flex';renderTabs();updateCounts();}
+    else await switchSheet(Math.min(idx,sheets.length-1));
+    await saveCurrent();toast('🗑 図面を削除しました','#e67e22');
+  });
 }
 
 // ===== ファイル読み込み =====
 function loadFile(e){
-  const file=e.target.files[0];
-  if(!file)return;
-  e.target.value='';
-  if(!currentProjectId){showToast('先に現場を選択してください','#e94560');openProjectScreen();return;}
-
+  const file=e.target.files[0];if(!file)return;e.target.value='';
+  if(!currentProjectId){toast('先に現場を選択してください','#e94560');openProjectScreen();return;}
   const reader=new FileReader();
   reader.onload=async ev=>{
-    // 現在のシートを先に保存
     if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
       sheets[currentSheetIdx].markers=[...markers];
-      if(imageLoaded){
-        const imgData=bgCanvas.toDataURL('image/jpeg',.65);
-        await saveSheetImage(currentProjectId,currentSheetIdx,imgData);
-        sheets[currentSheetIdx].imageData=imgData;
-      }
+      if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/jpeg',.65));}catch{}
     }
-
     const img=new Image();
     img.onload=async()=>{
-      setCanvasSize(img.width,img.height);
-      bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
-      imageLoaded=true;
-      document.getElementById('uploadHint').style.display='none';
-
+      setCanvasSize(img.width,img.height);bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
+      imageLoaded=true;document.getElementById('uploadHint').style.display='none';
       const name=file.name.replace(/\.[^/.]+$/,'').slice(0,14);
-      const imageData=bgCanvas.toDataURL('image/jpeg',.65);
-      const newIdx=sheets.length;
-      sheets.push({name,imageData,markers:[]});
-      currentSheetIdx=newIdx;
-      markers=[];
-
-      // IndexedDBに画像を保存
-      await saveSheetImage(currentProjectId,newIdx,imageData);
-
-      renderSheetTabs();
-      resetView();redraw();updateCounts();
-      await saveCurrentProject();
-      showToast(`📄 ${name} を追加しました`);
+      const ni=sheets.length;
+      sheets.push({name,markers:[]});currentSheetIdx=ni;markers=[];
+      await saveImg(currentProjectId,ni,bgCanvas.toDataURL('image/jpeg',.65));
+      renderTabs();resetView();redraw();updateCounts();await saveCurrent();
+      toast(`📄 ${name} を追加`);
     };
     img.src=ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// ===== キャンバスサイズ =====
+// ===== キャンバス =====
 function setCanvasSize(iw,ih){
   const area=document.getElementById('canvasArea');
-  const mw=area.clientWidth, mh=area.clientHeight;
-  const scale=Math.min(mw/iw,mh/ih);
-  const cw=Math.round(iw*scale), ch=Math.round(ih*scale);
-  bgCanvas.width=markerCanvas.width=cw;
-  bgCanvas.height=markerCanvas.height=ch;
-  bgCanvas.style.width=cw+'px'; bgCanvas.style.height=ch+'px';
-  markerCanvas.style.width=cw+'px'; markerCanvas.style.height=ch+'px';
-  container.style.width=cw+'px'; container.style.height=ch+'px';
+  const scale=Math.min(area.clientWidth/iw,area.clientHeight/ih);
+  const cw=Math.round(iw*scale),ch=Math.round(ih*scale);
+  bgCanvas.width=markerCanvas.width=cw;bgCanvas.height=markerCanvas.height=ch;
+  ['width','height'].forEach(p=>{bgCanvas.style[p]=cw+(p==='width'?'px':'px');});
+  bgCanvas.style.width=cw+'px';bgCanvas.style.height=ch+'px';
+  markerCanvas.style.width=cw+'px';markerCanvas.style.height=ch+'px';
+  container.style.width=cw+'px';container.style.height=ch+'px';
   bgCanvas.style.display='block';
 }
-
-// ===== 表示変換 =====
 function applyTransform(){
-  container.style.transform=`translate(${viewX}px,${viewY}px) scale(${viewScale}) rotate(${viewAngle}deg)`;
+  container.style.transform=`translate(${viewX}px,${viewY}px) scale(${viewScale})`;
   container.style.transformOrigin='center center';
   document.getElementById('zoomLbl').textContent=Math.round(viewScale*100)+'%';
-  const sl=document.getElementById('zoomSlider');
-  if(sl)sl.value=viewScale;
+  const sl=document.getElementById('zoomSlider');if(sl)sl.value=viewScale;
 }
 function changeZoom(d){viewScale=Math.min(Math.max(viewScale+d,.1),5);applyTransform();}
-function resetView(){viewX=0;viewY=0;viewScale=1;viewAngle=0;applyTransform();}
+function resetView(){viewX=0;viewY=0;viewScale=1;applyTransform();}
 
 // ===== モード =====
-function selectMarkerSize(btn){
-  document.querySelectorAll('.sz-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  markerSize=parseInt(btn.dataset.sz);
-}
-
 function toggleMode(){
   mode=mode==='mark'?'move':'mark';
-  const btn=document.getElementById('modeBtn');
-  btn.textContent=mode==='mark'?'✏️ マーキング':'👆 移動';
-  btn.style.background=mode==='mark'?'#27ae60':'#e67e22';
+  const b=document.getElementById('modeBtn');
+  b.textContent=mode==='mark'?'✏️ マーキング':'👆 移動';
+  b.style.background=mode==='mark'?'#27ae60':'#e67e22';
   markerCanvas.style.cursor=mode==='mark'?'crosshair':'grab';
+}
+function toggleQuickMode(){
+  quickMode=!quickMode;
+  const b=document.getElementById('quickBtn');
+  b.style.background=quickMode?'#e67e22':'#2a2a4a';
+  b.style.color=quickMode?'white':'#888';
+  if(quickMode){
+    b.textContent='⚡ 連続中';
+    // ONにした時に数値を設定するか確認
+    setQuickValue();
+  } else {
+    b.textContent='⚡ 連続';
+    quickLastValue='';
+    toast('連続入力OFF','#888');
+  }
+}
+
+function setQuickValue(){
+  // 数値設定モーダル
+  const old=document.getElementById('_quickModal');if(old)old.remove();
+  const d=DEFECTS[currentType];
+  const modal=document.createElement('div');modal.id='_quickModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML=`<div style="background:#1a1a2e;border-radius:16px;padding:22px;width:min(320px,88vw);color:white;">
+    <p style="font-size:14px;font-weight:700;margin-bottom:6px;color:#f5a623;">⚡ 連続入力モード</p>
+    <p style="font-size:12px;color:#aaa;margin-bottom:14px;">タップするだけで「${d.label}」を即追加します</p>
+    <div class="pf-label" style="font-size:11px;color:#aaa;margin-bottom:6px;">数量（省略可）</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+      <input id="_quickVal" type="number" min="0" step="${(d.unit==='m'||d.unit==='m2')?'.01':'1'}" placeholder="0"
+        value="${quickLastValue}"
+        style="flex:1;padding:11px 13px;border-radius:10px;border:none;font-size:18px;font-family:inherit;background:#2a2a4a;color:white;"
+        onkeydown="if(event.key==='Enter')document.getElementById('_quickOk').click()">
+      <span style="color:#aaa;font-size:13px;">${d.unitLabel}</span>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('_quickModal').remove();quickMode=false;const b=document.getElementById('quickBtn');b.style.background='#2a2a4a';b.style.color='#888';b.textContent='⚡ 連続';"
+        style="flex:1;padding:11px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;">キャンセル</button>
+      <button id="_quickOk"
+        style="flex:1;padding:11px;border:none;border-radius:10px;background:#e67e22;color:white;font-size:14px;font-weight:700;cursor:pointer;">開始</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>{const i=document.getElementById('_quickVal');if(i){i.focus();i.select();}},100);
+  document.getElementById('_quickOk').onclick=()=>{
+    const input=document.getElementById('_quickVal');
+    quickLastValue=input?input.value:'';
+    modal.remove();
+    const v=parseFloat(quickLastValue)||0;
+    toast(`⚡ 連続ON：${DEFECTS[currentType].label}${v>0?' '+v+DEFECTS[currentType].unitLabel:''} をタップで追加`,DEFECTS[currentType].color);
+  };
+}
+function selectSize(btn){
+  document.querySelectorAll('.sz-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');markerSize=parseInt(btn.dataset.sz);
+}
+function selectDefect(type){
+  if(currentType!==type) quickLastValue=''; // 種別変更時は前回値リセット
+  currentType=type;
+  document.querySelectorAll('.def-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));
+  const d=DEFECTS[type];
+  document.getElementById('indDot').style.background=d.color;
+  document.getElementById('indType').textContent=d.label;
+  closeAllDrawers();
 }
 
 // ===== タッチ操作 =====
 let t0=null,t1=null,startDist=0,startScale=1,startX=0,startY=0,startVX=0,startVY=0;
-let tapTime=0,tapMoved=false;
-let longTimer=null,dragIdx=null,isDrag=false;
+let tapTime=0,tapMoved=false,longTimer=null,dragIdx=null,isDrag=false;
 
-function getPos(cx,cy){
-  const r=markerCanvas.getBoundingClientRect();
-  return{x:(cx-r.left)*(markerCanvas.width/r.width),y:(cy-r.top)*(markerCanvas.height/r.height)};
-}
-function nearMarker(cx,cy){
-  const p=getPos(cx,cy);
-  for(let i=markers.length-1;i>=0;i--){
-    const m=markers[i];
-    if(Math.hypot(p.x-m.x,p.y-m.y)<16)return i;
-  }
-  return -1;
-}
+function getPos(cx,cy){const r=markerCanvas.getBoundingClientRect();return{x:(cx-r.left)*(markerCanvas.width/r.width),y:(cy-r.top)*(markerCanvas.height/r.height)};}
+function nearMarker(cx,cy){const p=getPos(cx,cy);for(let i=markers.length-1;i>=0;i--)if(Math.hypot(p.x-markers[i].x,p.y-markers[i].y)<16)return i;return -1;}
 
 markerCanvas.addEventListener('touchstart',e=>{
   e.preventDefault();tapTime=Date.now();tapMoved=false;isDrag=false;dragIdx=null;
   if(e.touches.length===1){
     t0=e.touches[0];startX=t0.clientX;startY=t0.clientY;startVX=viewX;startVY=viewY;
     const idx=nearMarker(t0.clientX,t0.clientY);
-    if(idx!==-1){longTimer=setTimeout(()=>{dragIdx=idx;isDrag=true;if(navigator.vibrate)navigator.vibrate(30);},500);}
+    if(idx!==-1)longTimer=setTimeout(()=>{dragIdx=idx;isDrag=true;if(navigator.vibrate)navigator.vibrate(30);},500);
   } else if(e.touches.length===2){
     clearTimeout(longTimer);t0=e.touches[0];t1=e.touches[1];
     startDist=Math.hypot(t1.clientX-t0.clientX,t1.clientY-t0.clientY);
@@ -941,122 +645,61 @@ markerCanvas.addEventListener('touchmove',e=>{
   } else if(e.touches.length===2){
     const tt0=e.touches[0],tt1=e.touches[1];
     const dist=Math.hypot(tt1.clientX-tt0.clientX,tt1.clientY-tt0.clientY);
-    const cx=(tt0.clientX+tt1.clientX)/2,cy=(tt0.clientY+tt1.clientY)/2;
     viewScale=Math.min(Math.max(startScale*(dist/startDist),.2),8);
-    viewX=startVX+(cx-startX);viewY=startVY+(cy-startY);applyTransform();
+    viewX=startVX+((tt0.clientX+tt1.clientX)/2-startX);viewY=startVY+((tt0.clientY+tt1.clientY)/2-startY);
+    applyTransform();
   }
 },{passive:false});
 
 markerCanvas.addEventListener('touchend',e=>{
   e.preventDefault();clearTimeout(longTimer);
-  if(isDrag){isDrag=false;dragIdx=null;saveCurrentProject().then(()=>updateCounts());return;}
+  if(isDrag){isDrag=false;dragIdx=null;saveCurrent().then(()=>updateCounts());return;}
   if(!tapMoved&&Date.now()-tapTime<250&&e.changedTouches.length===1&&mode==='mark'){
-    const tc=e.changedTouches[0];
-    onCanvasClick(tc.clientX,tc.clientY);
+    const tc=e.changedTouches[0];onCanvasClick(tc.clientX,tc.clientY);
   }
   t0=null;t1=null;
 },{passive:false});
 
 markerCanvas.addEventListener('click',e=>{if(mode==='mark')onCanvasClick(e.clientX,e.clientY);});
 
-// ===== Apple Pencil対応 =====
-let penDragIdx = null;
-let penIsDrag = false;
-let penLongTimer = null;
-let penStartX = 0, penStartY = 0;
-let penMoved = false;
-let penDownTime = 0;
-
-markerCanvas.addEventListener('pointerdown', e=>{
-  if(e.pointerType !== 'pen') return;
-  e.preventDefault();
-  penDownTime = Date.now();
-  penMoved = false;
-  penStartX = e.clientX;
-  penStartY = e.clientY;
-  penIsDrag = false;
-  penDragIdx = null;
-
-  // 近くにマーカーがあれば長押しで移動モード
-  const idx = nearMarker(e.clientX, e.clientY);
-  if(idx !== -1){
-    penLongTimer = setTimeout(()=>{
-      penDragIdx = idx;
-      penIsDrag = true;
-      markerCanvas.style.cursor = 'grabbing';
-      if(navigator.vibrate) navigator.vibrate(30);
-    }, 400);
-  }
+// Apple Pencil
+let pdIdx=null,pdDrag=false,pdTimer=null,pdSX=0,pdSY=0,pdMoved=false,pdTime=0;
+markerCanvas.addEventListener('pointerdown',e=>{
+  if(e.pointerType!=='pen')return;e.preventDefault();
+  pdTime=Date.now();pdMoved=false;pdDrag=false;pdIdx=null;pdSX=e.clientX;pdSY=e.clientY;
+  const idx=nearMarker(e.clientX,e.clientY);
+  if(idx!==-1)pdTimer=setTimeout(()=>{pdIdx=idx;pdDrag=true;if(navigator.vibrate)navigator.vibrate(30);},400);
 },{passive:false});
-
-markerCanvas.addEventListener('pointermove', e=>{
-  if(e.pointerType !== 'pen') return;
-  e.preventDefault();
-  const dx = Math.abs(e.clientX - penStartX);
-  const dy = Math.abs(e.clientY - penStartY);
-  if(dx > 3 || dy > 3) penMoved = true;
-
-  if(penIsDrag && penDragIdx !== null){
-    // マーカーをドラッグ移動
-    const p = getPos(e.clientX, e.clientY);
-    markers[penDragIdx].x = p.x;
-    markers[penDragIdx].y = p.y;
-    redraw();
-  }
+markerCanvas.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='pen')return;e.preventDefault();
+  if(Math.abs(e.clientX-pdSX)>3||Math.abs(e.clientY-pdSY)>3)pdMoved=true;
+  if(pdDrag&&pdIdx!==null){const p=getPos(e.clientX,e.clientY);markers[pdIdx].x=p.x;markers[pdIdx].y=p.y;redraw();}
 },{passive:false});
-
-markerCanvas.addEventListener('pointerup', e=>{
-  if(e.pointerType !== 'pen') return;
-  e.preventDefault();
-  clearTimeout(penLongTimer);
-
-  if(penIsDrag){
-    // 移動完了
-    penIsDrag = false;
-    penDragIdx = null;
-    markerCanvas.style.cursor = 'crosshair';
-    saveCurrentProject().then(()=>updateCounts());
-    return;
-  }
-
-  // 短いタップ（移動なし）→ マーキング
-  if(!penMoved && Date.now() - penDownTime < 300 && mode === 'mark'){
-    onCanvasClick(e.clientX, e.clientY);
-  }
-
-  penDragIdx = null;
-  penIsDrag = false;
+markerCanvas.addEventListener('pointerup',e=>{
+  if(e.pointerType!=='pen')return;e.preventDefault();clearTimeout(pdTimer);
+  if(pdDrag){pdDrag=false;pdIdx=null;saveCurrent().then(()=>updateCounts());return;}
+  if(!pdMoved&&Date.now()-pdTime<300&&mode==='mark')onCanvasClick(e.clientX,e.clientY);
 },{passive:false});
-
-markerCanvas.addEventListener('pointercancel', e=>{
-  if(e.pointerType !== 'pen') return;
-  clearTimeout(penLongTimer);
-  penIsDrag = false; penDragIdx = null;
-},{passive:false});
+markerCanvas.addEventListener('pointercancel',e=>{if(e.pointerType!=='pen')return;clearTimeout(pdTimer);pdDrag=false;pdIdx=null;},{passive:false});
 
 // ===== マーキング =====
 function onCanvasClick(cx,cy){
-  const idx=nearMarker(cx,cy);
-  if(idx!==-1){openEditPopup(idx);return;}
+  const idx=nearMarker(cx,cy);if(idx!==-1){openEditPop(idx);return;}
   const p=getPos(cx,cy);
   pendingMark={x:p.x,y:p.y,type:currentType,shape:DEFECTS[currentType].shape,size:markerSize,value:null,memo:''};
   editingIdx=null;
-
-  // 連続入力モード：ポップアップなしで即登録
   if(quickMode){
-    pendingMark.value = quickLastValue !== '' ? parseFloat(quickLastValue)||0 : 0;
-    pendingMark.memo  = '';
-    markers.push(pendingMark);
-    pendingMark = null;
-    redraw(); updateCounts();
-    saveCurrentProject();
-    showToast(`✅ ${DEFECTS[currentType].label} を追加`, DEFECTS[currentType].color);
+    // 連続モード：値に関わらず即追加（0でも追加）
+    pendingMark.value=quickLastValue!==''?parseFloat(quickLastValue)||0:0;
+    markers.push({...pendingMark});pendingMark=null;
+    redraw();updateCounts();saveCurrent();
+    const v=parseFloat(quickLastValue)||0;
+    toast(`✅ ${DEFECTS[currentType].label}${v>0?' '+v:''}`,DEFECTS[currentType].color);
     return;
   }
-  openPopup();
+  openPop();
 }
-
-function openPopup(){
+function openPop(){
   const d=DEFECTS[currentType];
   document.getElementById('popTitle').textContent=`📝 ${d.label}`;
   document.getElementById('valLabel').textContent=d.unitLabel;
@@ -1069,8 +712,7 @@ function openPopup(){
   document.getElementById('popup').style.display='block';
   setTimeout(()=>document.getElementById('valInput').focus(),100);
 }
-
-function openEditPopup(idx){
+function openEditPop(idx){
   const m=markers[idx];const d=DEFECTS[m.type];
   editingIdx=idx;pendingMark=null;
   document.getElementById('popTitle').textContent=`✏️ No.${idx+1} 編集`;
@@ -1080,200 +722,44 @@ function openEditPopup(idx){
   document.getElementById('valInput').step=(d.unit==='m'||d.unit==='m2')?'.01':'1';
   document.getElementById('memoInput').value=m.memo||'';
   document.getElementById('typeSelectWrap').style.display='block';
-  document.getElementById('editTypeSelect').value=m.type;
+  const sel=document.getElementById('editTypeSelect');sel.value=m.type;
+  sel.onchange=function(){const nd=DEFECTS[this.value];document.getElementById('valLabel').textContent=nd.unitLabel;document.getElementById('unitLbl').textContent=nd.unitLabel;};
   document.getElementById('delBtn').style.display='block';
   document.getElementById('popup').style.display='block';
+  setTimeout(()=>document.getElementById('valInput').focus(),100);
 }
-
-function onEditTypeChange(){
-  const t=document.getElementById('editTypeSelect').value;
-  const d=DEFECTS[t];
-  document.getElementById('valLabel').textContent=d.unitLabel;
-  document.getElementById('unitLbl').textContent=d.unitLabel;
-  document.getElementById('valInput').step=(d.unit==='m'||d.unit==='m2')?'.01':'1';
-}
-
 async function saveMark(){
   const val=parseFloat(document.getElementById('valInput').value)||0;
   const memo=document.getElementById('memoInput').value;
-  quickLastValue = document.getElementById('valInput').value; // 連続入力用に記憶
+  quickLastValue=document.getElementById('valInput').value;
   if(editingIdx!==null){
     const t=document.getElementById('editTypeSelect').value;
-    const m=markers[editingIdx];
-    m.type=t;m.shape=DEFECTS[t].shape;m.value=val;m.memo=memo;
-    editingIdx=null;
+    const m=markers[editingIdx];m.type=t;m.shape=DEFECTS[t].shape;m.value=val;m.memo=memo;editingIdx=null;
   } else if(pendingMark){
-    pendingMark.value=val;pendingMark.memo=memo;
-    markers.push(pendingMark);pendingMark=null;
+    pendingMark.value=val;pendingMark.memo=memo;markers.push(pendingMark);pendingMark=null;
   }
   document.getElementById('popup').style.display='none';
-  redraw();updateCounts();
-  await saveCurrentProject();
+  redraw();updateCounts();await saveCurrent();
 }
-
-function cancelMark(){
-  pendingMark=null;editingIdx=null;
-  document.getElementById('popup').style.display='none';
-}
-
+function cancelMark(){pendingMark=null;editingIdx=null;document.getElementById('popup').style.display='none';}
 function deleteMark(){
   if(editingIdx===null)return;
-  showConfirm(`No.${editingIdx+1}を削除しますか？`, async()=>{
+  confirmModal(`No.${editingIdx+1}を削除しますか？`,async()=>{
     markers.splice(editingIdx,1);editingIdx=null;
     document.getElementById('popup').style.display='none';
-    redraw();updateCounts();
-    await saveCurrentProject();
+    redraw();updateCounts();await saveCurrent();
   });
 }
 
 // ===== 描画 =====
-function redraw(){
-  mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
-  markers.forEach(m=>drawMarker(m));
-}
-
-function drawMarker(m){
-  const{x,y,type,shape}=m;
-  const color=DEFECTS[type]?.color||'#888';
-  const sz=m.size||3; // サイズ取得（デフォルト3）
-  const val=m.value>0?( m.value%1===0?String(m.value):m.value.toFixed(1) ):'';
-  const fs=Math.max(5, sz*2); // フォントサイズもサイズに連動
-  mCtx.save();
-  mCtx.font=`bold ${fs}px sans-serif`;
-  mCtx.textAlign='center';mCtx.textBaseline='middle';
-  const tw=val?mCtx.measureText(val).width:0;
-
-  if(shape==='circle'){
-    const r=Math.max(sz*1.5, tw/2+sz);
-    mCtx.beginPath();mCtx.arc(x,y,r,0,Math.PI*2);mCtx.fillStyle=color;mCtx.fill();
-    if(val){mCtx.fillStyle='white';mCtx.fillText(val,x,y);}
-  } else if(shape==='wave'){
-    const ww=Math.max(sz*4, tw+sz*2),amp=sz*0.7,steps=6,sw=ww/steps,sx=x-ww/2;
-    mCtx.beginPath();mCtx.moveTo(sx,y);
-    for(let i=0;i<steps;i++){mCtx.quadraticCurveTo(sx+sw*i+sw/2,y+(i%2===0?-amp:amp),sx+sw*(i+1),y);}
-    mCtx.strokeStyle=color;mCtx.lineWidth=Math.max(1,sz*0.4);mCtx.lineCap='round';mCtx.stroke();
-    if(val){mCtx.fillStyle=color;mCtx.fillText(val,x,y+amp+fs);}
-  } else if(shape==='rect'){
-    const rw=Math.max(sz*3,tw+sz*2),rh=fs+sz;
-    mCtx.fillStyle=color;mCtx.beginPath();mCtx.roundRect(x-rw/2,y-rh/2,rw,rh,sz*0.5);mCtx.fill();
-    if(val){mCtx.fillStyle='white';mCtx.fillText(val,x,y);}
-  } else if(shape==='triangle'){
-    const tr=Math.max(sz*2,tw/2+sz*1.5),th=tr*1.8;
-    mCtx.beginPath();mCtx.moveTo(x,y-th*.6);mCtx.lineTo(x+tr,y+th*.4);mCtx.lineTo(x-tr,y+th*.4);mCtx.closePath();
-    mCtx.fillStyle=color;mCtx.fill();
-    if(val){mCtx.fillStyle='white';mCtx.fillText(val,x,y+th*.08);}
-  }
-  mCtx.restore();
-}
-
-// ===== 種別選択 =====
-function selectDefect(type){
-  currentType=type;
-  document.querySelectorAll('.def-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));
-  const d=DEFECTS[type];
-  document.getElementById('indDot').style.background=d.color;
-  document.getElementById('indType').textContent=d.label;
-  closeAllDrawers();
-}
-
-// ===== 集計 =====
-function updateCounts(){
-  const stats={};
-  Object.keys(DEFECTS).forEach(k=>stats[k]={total:0,count:0});
-  markers.forEach(m=>{stats[m.type].count++;stats[m.type].total+=(m.value||0);});
-  const total=markers.length;
-  const badge=document.getElementById('totalBadge');
-  badge.textContent=total;badge.classList.toggle('show',total>0);
-  const list=document.getElementById('countList');list.innerHTML='';
-  Object.entries(DEFECTS).forEach(([k,d])=>{
-    const s=stats[k];if(s.count===0)return;
-    const ts=s.total>0?`${s.total%1===0?s.total:s.total.toFixed(2)}${d.unitLabel}`:`${s.count}件`;
-    list.innerHTML+=`<div class="count-card"><div class="count-card-header"><div class="count-dot" style="background:${d.color}"></div><span class="count-label">${d.label}</span><span style="color:#666;font-size:10px">${s.count}マーカー</span></div><div class="count-val">${ts}</div></div>`;
-  });
-  if(list.innerHTML==='')list.innerHTML='<div style="color:#555;font-size:12px;text-align:center;padding:14px">マーキングなし</div>';
-}
-
-// ===== 元に戻す/全削除 =====
-async function undoLast(){
-  if(!markers.length)return;
-  markers.pop();redraw();updateCounts();
-  await saveCurrentProject();
-}
-function clearAll(){
-  if(!markers.length)return;
-  showConfirm(`全${markers.length}件のマーキングを削除しますか？`, async()=>{
-    markers=[];redraw();updateCounts();
-    await saveCurrentProject();
-  });
-}
-
-// ===== ドロワー =====
-let activeDrawer=null;
-function toggleDrawer(id,btnId){
-  const d=document.getElementById(id);
-  const isOpen=d.classList.contains('open');
-  closeAllDrawers(false);
-  if(!isOpen){
-    d.classList.add('open');
-    document.getElementById('drawerOverlay').classList.add('show');
-    activeDrawer=id;
-    document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById(btnId).classList.add('active');
-  }
-}
-function closeAllDrawers(resetBtn=true){
-  document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'));
-  document.getElementById('drawerOverlay').classList.remove('show');
-  activeDrawer=null;
-  if(resetBtn)document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
-}
-
-// ===== メニュー =====
-function toggleMenu(){
-  const m=document.getElementById('dropMenu'),o=document.getElementById('menuOverlay');
-  const open=m.style.display==='block';
-  m.style.display=open?'none':'block';o.style.display=open?'none':'block';
-}
-function closeMenu(){document.getElementById('dropMenu').style.display='none';document.getElementById('menuOverlay').style.display='none';}
-
-// ===== 印刷・保存 =====
-function getMergedCanvas(scale=2){
-  // 印刷用に高解像度で合成（デフォルト2倍）
-  const w=bgCanvas.width*scale;
-  const h=bgCanvas.height*scale;
-  const c=document.createElement('canvas');
-  c.width=w; c.height=h;
-  const ctx=c.getContext('2d');
-
-  // 背景図面を拡大描画
-  ctx.drawImage(bgCanvas,0,0,w,h);
-
-  // マーカーを高解像度で再描画
-  const tempCanvas=document.createElement('canvas');
-  tempCanvas.width=w; tempCanvas.height=h;
-  const tCtx=tempCanvas.getContext('2d');
-
-  // 現在のmCtxの描画をscale倍で再描画
-  markers.forEach(m=>{
-    drawMarkerOnCtx(tCtx, m, scale);
-  });
-  ctx.drawImage(tempCanvas,0,0);
-  return c;
-}
-
-function drawMarkerOnCtx(ctx, m, scale=1){
-  const x=m.x*scale, y=m.y*scale;
-  const type=m.type, shape=m.shape;
-  const color=DEFECTS[type]?.color||'#888';
+function redraw(){mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);markers.forEach(m=>drawM(mCtx,m,1));}
+function drawM(ctx,m,scale){
+  const x=m.x*scale,y=m.y*scale,color=DEFECTS[m.type]?.color||'#888',shape=m.shape;
   const sz=(m.size||3)*scale;
   const val=m.value>0?(m.value%1===0?String(m.value):m.value.toFixed(1)):'';
   const fs=Math.max(5,sz*2);
-
-  ctx.save();
-  ctx.font=`bold ${fs}px sans-serif`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.save();ctx.font=`bold ${fs}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
   const tw=val?ctx.measureText(val).width:0;
-
   if(shape==='circle'){
     const r=Math.max(sz*1.5,tw/2+sz);
     ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
@@ -1281,7 +767,7 @@ function drawMarkerOnCtx(ctx, m, scale=1){
   } else if(shape==='wave'){
     const ww=Math.max(sz*4,tw+sz*2),amp=sz*0.7,steps=6,sw=ww/steps,sx=x-ww/2;
     ctx.beginPath();ctx.moveTo(sx,y);
-    for(let i=0;i<steps;i++){ctx.quadraticCurveTo(sx+sw*i+sw/2,y+(i%2===0?-amp:amp),sx+sw*(i+1),y);}
+    for(let i=0;i<steps;i++)ctx.quadraticCurveTo(sx+sw*i+sw/2,y+(i%2===0?-amp:amp),sx+sw*(i+1),y);
     ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,sz*0.4);ctx.lineCap='round';ctx.stroke();
     if(val){ctx.fillStyle=color;ctx.fillText(val,x,y+amp+fs);}
   } else if(shape==='rect'){
@@ -1297,923 +783,336 @@ function drawMarkerOnCtx(ctx, m, scale=1){
   ctx.restore();
 }
 
-// ===== バックアップ・復元 =====
-async function backupProject(){
-  if(!currentProjectId){ showToast('現場を選択してください','#e94560'); return; }
-
-  // 現在の作業を保存
-  await saveCurrentProject();
-
-  const projects=loadProjects();
-  const proj=projects.find(p=>p.id===currentProjectId);
-  const data=loadProjData(currentProjectId)||{sheets:[],currentSheetIdx:-1};
-
-  // 全シートの画像をIndexedDBから取得してJSONに含める
-  setSaveStatus('saving');
-  const sheetsWithImages=await Promise.all(
-    data.sheets.map(async(s,i)=>({
-      name:s.name,
-      markers:s.markers||[],
-      imageData:await loadSheetImage(currentProjectId,i)||null
-    }))
-  );
-
-  const backup={
-    version:1,
-    projectName:proj?.name||'現場',
-    date:new Date().toISOString(),
-    sheets:sheetsWithImages,
-    currentSheetIdx:data.currentSheetIdx
-  };
-
-  const json=JSON.stringify(backup);
-  const blob=new Blob([json],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  a.download=`${safe(proj?.name||'現場')}_backup.json`;
-  a.href=url;
-  a.click();
-  URL.revokeObjectURL(url);
-  setSaveStatus('saved');
-  showToast('💾 バックアップを保存しました');
+// ===== 集計 =====
+function updateCounts(){
+  const stats={};Object.keys(DEFECTS).forEach(k=>stats[k]={total:0,count:0});
+  markers.forEach(m=>{stats[m.type].count++;stats[m.type].total+=(m.value||0);});
+  const total=markers.length;
+  const badge=document.getElementById('totalBadge');badge.textContent=total;badge.classList.toggle('show',total>0);
+  const list=document.getElementById('countList');list.innerHTML='';
+  Object.entries(DEFECTS).forEach(([k,d])=>{
+    const s=stats[k];if(!s.count)return;
+    const ts=s.total>0?`${s.total%1===0?s.total:s.total.toFixed(2)}${d.unitLabel}`:`${s.count}件`;
+    list.innerHTML+=`<div class="count-card"><div class="count-card-header"><div class="count-dot" style="background:${d.color}"></div><span class="count-label">${d.label}</span><span style="color:#666;font-size:10px">${s.count}マーカー</span></div><div class="count-val">${ts}</div></div>`;
+  });
+  if(!list.innerHTML)list.innerHTML='<div style="color:#555;font-size:12px;text-align:center;padding:14px">マーキングなし</div>';
+}
+async function undoLast(){if(!markers.length)return;markers.pop();redraw();updateCounts();await saveCurrent();}
+function clearAll(){
+  if(!markers.length)return;
+  confirmModal(`全${markers.length}件削除しますか？`,async()=>{markers=[];redraw();updateCounts();await saveCurrent();});
 }
 
-async function restoreProject(e){
-  const file=e.target.files[0];
-  if(!file)return;
-  e.target.value='';
+// ===== ドロワー =====
+function toggleDrawer(id,btnId){
+  const d=document.getElementById(id),open=d.classList.contains('open');
+  closeAllDrawers(false);
+  if(!open){d.classList.add('open');document.getElementById('drawerOverlay').classList.add('show');document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));document.getElementById(btnId).classList.add('active');}
+}
+function closeAllDrawers(rb=true){
+  document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('open'));
+  document.getElementById('drawerOverlay').classList.remove('show');
+  if(rb)document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+}
 
+// ===== メニュー =====
+function toggleMenu(){const m=document.getElementById('dropMenu'),o=document.getElementById('menuOverlay'),open=m.style.display==='block';m.style.display=open?'none':'block';o.style.display=open?'none':'block';}
+function closeMenu(){document.getElementById('dropMenu').style.display='none';document.getElementById('menuOverlay').style.display='none';}
+
+// ===== PNG保存・印刷 =====
+function getMerged(scale=2){
+  const w=bgCanvas.width*scale,h=bgCanvas.height*scale;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d');ctx.drawImage(bgCanvas,0,0,w,h);
+  const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
+  const tCtx=tmp.getContext('2d');markers.forEach(m=>drawM(tCtx,m,scale));
+  ctx.drawImage(tmp,0,0);return c;
+}
+function getFName(ext){
+  const ps=loadProjs();const p=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
+  const pn=p?.name||'補修図面';const sn=sheets[currentSheetIdx]?.name||'図面';
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  return `${safe(pn)}_${safe(sn)}.${ext}`;
+}
+function savePNG(){
+  if(!imageLoaded){toast('図面を読み込んでください','#e94560');return;}
+  const a=document.createElement('a');a.href=getMerged().toDataURL('image/png');a.download=getFName('png');a.click();
+  toast(`⬇️ ${getFName('png')} を保存`);
+}
+function printDrawing(){
+  if(!imageLoaded){toast('図面を読み込んでください','#e94560');return;}
+  saveCurrent();
+  const url=getMerged().toDataURL('image/png');
+  const old=document.getElementById('printOverlay');if(old)old.remove();
+  const overlay=document.createElement('div');overlay.id='printOverlay';
+  overlay.style.cssText='position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;';
+  const tb=document.createElement('div');tb.style.cssText='padding:10px 14px;background:#1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;';
+  const closeBtn=document.createElement('button');closeBtn.textContent='✕ 閉じる';closeBtn.style.cssText='padding:8px 12px;background:#444;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;';
+  closeBtn.onclick=()=>{overlay.remove();if(currentProjectId)loadImg(currentProjectId,currentSheetIdx).then(d=>{if(d){const img=new Image();img.onload=()=>{setCanvasSize(img.width,img.height);bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);imageLoaded=true;redraw();};img.src=d;}});};
+  const dl=document.createElement('a');dl.href=url;dl.download=getFName('png');dl.textContent='⬇️ PNG保存';dl.style.cssText='padding:8px 14px;background:#27ae60;color:white;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;';
+  const hint=document.createElement('div');hint.style.cssText='width:100%;color:#aaa;font-size:11px;padding-top:4px;';hint.textContent='📌 PNG保存 → 写真アプリ → 共有（□↑）→「プリント」';
+  const title=document.createElement('span');title.style.cssText='color:white;font-size:13px;font-weight:700;flex:1;';title.textContent='補修図面';
+  tb.appendChild(title);tb.appendChild(dl);tb.appendChild(closeBtn);tb.appendChild(hint);
+  const img=document.createElement('img');img.src=url;img.style.cssText='width:100%;height:auto;display:block;';
+  overlay.appendChild(tb);overlay.appendChild(img);document.body.appendChild(overlay);
+}
+
+// ===== バックアップ・復元 =====
+async function backupProject(){
+  if(!currentProjectId){toast('現場を選択してください','#e94560');return;}
+  await saveCurrent();
+  const p=loadProjs().find(p=>p.id===currentProjectId);
+  const data=loadPD(currentProjectId)||{sheets:[],currentSheetIdx:-1};
+  const withImg=await Promise.all(data.sheets.map(async(s,i)=>({name:s.name,markers:s.markers||[],imageData:await loadImg(currentProjectId,i)||null})));
+  const backup={version:1,projectName:p?.name||'現場',date:new Date().toISOString(),sheets:withImg,currentSheetIdx:data.currentSheetIdx};
+  const blob=new Blob([JSON.stringify(backup)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  a.download=`${safe(p?.name||'現場')}_backup.json`;a.href=url;a.click();URL.revokeObjectURL(url);
+  toast('💾 バックアップを保存しました');
+}
+async function restoreProject(e){
+  const file=e.target.files[0];if(!file)return;e.target.value='';
   const reader=new FileReader();
   reader.onload=async ev=>{
     try{
-      const backup=JSON.parse(ev.target.result);
-      if(!backup.sheets){ showToast('⚠️ 無効なファイルです','#e94560'); return; }
-
-      // 新しい現場として追加
-      const id='p'+Date.now();
-      const name=backup.projectName||'復元データ';
-      const projects=loadProjects();
-      projects.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});
-      saveProjects(projects);
-
-      // マーカーデータをLocalStorageに保存
-      const lite={
-        sheets:backup.sheets.map(s=>({name:s.name,markers:s.markers||[]})),
-        currentSheetIdx:backup.currentSheetIdx||0
-      };
-      localStorage.setItem('hp_'+id,JSON.stringify(lite));
-
-      // 画像をIndexedDBに保存
-      for(let i=0;i<backup.sheets.length;i++){
-        const s=backup.sheets[i];
-        if(s.imageData){
-          await saveSheetImage(id,i,s.imageData);
-        }
-      }
-
-      showToast(`✅ 「${name}」を復元しました`);
-      // 復元した現場を開く
-      await openProject(id);
-      renderProjectList();
-
-    } catch(err){
-      showToast('⚠️ 読み込みに失敗しました','#e94560');
-      console.error(err);
-    }
+      const backup=JSON.parse(ev.target.result);if(!backup.sheets){toast('⚠️ 無効なファイルです','#e94560');return;}
+      const id='p'+Date.now(),name=backup.projectName||'復元データ';
+      const ps=loadProjs();ps.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});saveProjs(ps);
+      localStorage.setItem('hp_'+id,JSON.stringify({sheets:backup.sheets.map(s=>({name:s.name,markers:s.markers||[]})),currentSheetIdx:backup.currentSheetIdx||0}));
+      for(let i=0;i<backup.sheets.length;i++)if(backup.sheets[i].imageData)await saveImg(id,i,backup.sheets[i].imageData);
+      toast(`✅ 「${name}」を復元しました`);await openProject(id);renderProjList();
+    }catch{toast('⚠️ 読み込みに失敗しました','#e94560');}
   };
   reader.readAsText(file);
-}
-
-function getFileName(ext){
-  const projects=loadProjects();
-  const proj=currentProjectId?projects.find(p=>p.id===currentProjectId):null;
-  const projName=proj?proj.name:'補修図面';
-  const sheetName=sheets[currentSheetIdx]?.name||'図面';
-  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  return `${safe(projName)}_${safe(sheetName)}.${ext}`;
-}
-
-function savePNG(){
-  if(!imageLoaded){showToast('図面を読み込んでください','#e94560');return;}
-  const fname=getFileName('png');
-  const a=document.createElement('a');
-  a.href=getMergedCanvas().toDataURL('image/png');
-  a.download=fname;
-  a.click();
-  showToast(`⬇️ ${fname} を保存`);
-}
-function printDrawing(){
-  if(!imageLoaded){alert('図面を読み込んでください');return;}
-  // 現在の作業を先に保存
-  saveCurrentProject();
-  const url=getMergedCanvas().toDataURL('image/png');
-
-  // 既存オーバーレイを削除
-  const old=document.getElementById('printOverlay');
-  if(old)old.remove();
-
-  const overlay=document.createElement('div');
-  overlay.id='printOverlay';
-  overlay.style.cssText='position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;';
-
-  const toolbar=document.createElement('div');
-  toolbar.style.cssText='padding:10px 14px;background:#1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;';
-
-  // 閉じるボタン（確実にオーバーレイを削除）
-  const closeBtn=document.createElement('button');
-  closeBtn.textContent='✕ 閉じる';
-  closeBtn.style.cssText='padding:8px 12px;background:#444;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;touch-action:manipulation;';
-  closeBtn.onclick=()=>{
-    overlay.remove();
-    // キャンバスを再描画して図面を復元
-    if(sheets[currentSheetIdx]?.imageData){
-      const img=new Image();
-      img.onload=()=>{
-        setCanvasSize(img.width,img.height);
-        bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
-        imageLoaded=true;
-        redraw();
-      };
-      img.src=sheets[currentSheetIdx].imageData;
-    }
-  };
-
-  const dlLink=document.createElement('a');
-  dlLink.href=url;
-  dlLink.download=getFileName('png');
-  dlLink.textContent='⬇️ PNG保存';
-  dlLink.style.cssText='padding:8px 14px;background:#27ae60;color:white;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;touch-action:manipulation;';
-
-  const title=document.createElement('span');
-  title.textContent='補修図面';
-  title.style.cssText='color:white;font-size:13px;font-weight:700;flex:1;';
-
-  const hint=document.createElement('div');
-  hint.style.cssText='width:100%;color:#aaa;font-size:11px;padding-top:6px;line-height:1.6;';
-  hint.textContent='📌 印刷：PNG保存 → 写真アプリで開く → 共有（□↑）→「プリント」';
-
-  toolbar.appendChild(title);
-  toolbar.appendChild(dlLink);
-  toolbar.appendChild(closeBtn);
-  toolbar.appendChild(hint);
-
-  const img=document.createElement('img');
-  img.src=url;
-  img.style.cssText='width:100%;height:auto;display:block;flex:1;object-fit:contain;';
-
-  overlay.appendChild(toolbar);
-  overlay.appendChild(img);
-  document.body.appendChild(overlay);
 }
 
 // ===== レポート =====
 let repMode='current';
 function showReport(mode){
-  repMode=mode||'current';
-  saveCurrentProject();
+  repMode=mode||'current';saveCurrent();
   document.getElementById('repTabCur').classList.toggle('active',repMode==='current');
   document.getElementById('repTabAll').classList.toggle('active',repMode==='all');
   const tbody=document.getElementById('repBody');tbody.innerHTML='';
   if(repMode==='current'){
-    const sn=sheets[currentSheetIdx]?.name||'図面';
-    document.getElementById('repTitle').textContent=`📋 レポート｜${sn}`;
+    document.getElementById('repTitle').textContent=`📋 レポート｜${sheets[currentSheetIdx]?.name||'図面'}`;
     renderRepRows(tbody,markers);
   } else {
     document.getElementById('repTitle').textContent='📋 全図面合計';
-    const allStats={};
-    Object.keys(DEFECTS).forEach(k=>allStats[k]={total:0,memos:[],sheets:[]});
+    const allStats={};Object.keys(DEFECTS).forEach(k=>allStats[k]={total:0,memos:[],sheets:[]});
     sheets.forEach((s,i)=>{
       const ms=i===currentSheetIdx?markers:s.markers;
-      ms.forEach(m=>{
-        allStats[m.type].total+=(m.value||0);
-        if(m.memo)allStats[m.type].memos.push(m.memo);
-        if(!allStats[m.type].sheets.includes(s.name))allStats[m.type].sheets.push(s.name);
-      });
+      ms.forEach(m=>{allStats[m.type].total+=(m.value||0);if(m.memo)allStats[m.type].memos.push(m.memo);if(!allStats[m.type].sheets.includes(s.name))allStats[m.type].sheets.push(s.name);});
     });
-    // 図面別内訳
     let any=false;
     sheets.forEach((s,i)=>{
-      const ms=i===currentSheetIdx?markers:s.markers;
-      if(!ms.length)return;any=true;
-      tbody.innerHTML+=`<tr><td colspan="3" style="background:#f0f0f0;font-weight:700;font-size:11px;padding:7px 10px;color:#333;">📄 ${s.name}</td></tr>`;
+      const ms=i===currentSheetIdx?markers:s.markers;if(!ms.length)return;any=true;
+      tbody.innerHTML+=`<tr><td colspan="3" style="background:#f0f0f0;font-weight:700;font-size:11px;padding:6px 10px;">📄 ${s.name}</td></tr>`;
       renderRepRows(tbody,ms);
     });
-    // 合計
     if(any){
-      tbody.innerHTML+=`<tr><td colspan="3" style="background:#1a1a2e;font-weight:700;font-size:11px;padding:7px 10px;color:white;">📊 合計</td></tr>`;
+      tbody.innerHTML+=`<tr><td colspan="3" style="background:#1a1a2e;font-weight:700;font-size:11px;padding:6px 10px;color:white;">📊 合計</td></tr>`;
       Object.entries(DEFECTS).forEach(([k,d])=>{
         const s=allStats[k];if(!s.total&&!s.memos.length)return;
         const vs=s.total>0?`${s.total%1===0?s.total:s.total.toFixed(2)}${d.unitLabel}`:'—';
-        tbody.innerHTML+=`<tr style="background:#f8f8f8"><td><span class="badge" style="background:${d.color}"></span><strong>${d.label}</strong></td><td style="text-align:right;font-weight:700;font-size:14px">${vs}</td><td style="text-align:right;color:#888;font-size:11px">${s.sheets.join('、')||'—'}</td></tr>`;
+        tbody.innerHTML+=`<tr style="background:#f8f8f8"><td><span class="badge" style="background:${d.color}"></span><strong>${d.label}</strong></td><td style="text-align:right;font-weight:700;font-size:14px">${vs}</td><td style="text-align:right;color:#888;font-size:11px">${s.sheets.join('、')}</td></tr>`;
       });
-    } else {
-      tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#999;padding:18px">マーキングなし</td></tr>';
-    }
+    } else tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#999;padding:18px">マーキングなし</td></tr>';
   }
   document.getElementById('modalOverlay').classList.add('show');
 }
-
 function renderRepRows(tbody,ms){
-  const stats={};
-  Object.keys(DEFECTS).forEach(k=>stats[k]={total:0,memos:[]});
+  const stats={};Object.keys(DEFECTS).forEach(k=>stats[k]={total:0,memos:[]});
   ms.forEach(m=>{stats[m.type].total+=(m.value||0);if(m.memo)stats[m.type].memos.push(m.memo);});
   const used=Object.entries(DEFECTS).filter(([k])=>ms.some(m=>m.type===k));
   if(!used.length){tbody.innerHTML+='<tr><td colspan="3" style="text-align:center;color:#999;padding:10px;font-size:12px">マーキングなし</td></tr>';return;}
   used.forEach(([k,d])=>{
-    const s=stats[k];if(!ms.some(m=>m.type===k))return;
+    const s=stats[k];
     const vs=s.total>0?`${s.total%1===0?s.total:s.total.toFixed(2)}${d.unitLabel}`:'—';
     tbody.innerHTML+=`<tr><td><span class="badge" style="background:${d.color}"></span><strong>${d.label}</strong></td><td style="text-align:right;font-weight:700;font-size:14px">${vs}</td><td style="text-align:right;color:#666;font-size:12px">${s.memos.join('、')||'—'}</td></tr>`;
   });
 }
+function closeReport(){document.getElementById('modalOverlay').classList.remove('show');}
 
-// ===== 連続入力モード =====
-let quickMode = false;
-let quickLastValue = '';
-
-function toggleQuickMode(){
-  quickMode = !quickMode;
-  const btn = document.getElementById('quickBtn');
-  btn.style.background = quickMode ? '#e67e22' : '#2a2a4a';
-  btn.style.color      = quickMode ? 'white'   : '#888';
-  btn.textContent      = quickMode ? '⚡ 連続中' : '⚡ 連続';
-  showToast(quickMode
-    ? '⚡ 連続入力モード ON：タップするだけでマーキング（前回の数値を引き継ぎ）'
-    : '連続入力モード OFF', quickMode ? '#e67e22' : '#7f8c8d');
+// レポートPNG
+function buildRepCanvas(){
+  const title=document.getElementById('repTitle').textContent;
+  const rows=Array.from(document.getElementById('repBody').querySelectorAll('tr'));
+  const W=640,lH=32,hH=54,pad=22,H=hH+rows.length*lH+pad*2;
+  const canvas=document.createElement('canvas');canvas.width=W*2;canvas.height=H*2;
+  const ctx=canvas.getContext('2d');ctx.scale(2,2);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#1a1a2e';ctx.fillRect(0,0,W,hH);
+  ctx.fillStyle='white';ctx.font='bold 15px sans-serif';ctx.textBaseline='middle';ctx.fillText(title,pad,hH/2);
+  ctx.font='10px sans-serif';ctx.fillStyle='rgba(255,255,255,.7)';ctx.textAlign='right';ctx.fillText(new Date().toLocaleDateString('ja-JP'),W-pad,hH/2);ctx.textAlign='left';
+  const thY=hH+pad*.4;
+  ctx.fillStyle='#f0f0f0';ctx.fillRect(0,thY,W,lH);
+  ctx.fillStyle='#555';ctx.font='bold 11px sans-serif';ctx.textBaseline='middle';
+  ctx.fillText('種別',pad,thY+lH/2);ctx.textAlign='right';ctx.fillText('数量',W/2+80,thY+lH/2);ctx.fillText('メモ',W-pad,thY+lH/2);ctx.textAlign='left';
+  rows.forEach((row,i)=>{
+    const y=thY+lH*(i+1);ctx.fillStyle=i%2===0?'#fff':'#f8f8f8';ctx.fillRect(0,y,W,lH);
+    const cells=row.querySelectorAll('td');if(!cells.length)return;
+    if(cells.length===1){const bg=cells[0].style.background||'#e0e0e0';ctx.fillStyle=bg;ctx.fillRect(0,y,W,lH);ctx.fillStyle=bg==='rgb(26, 26, 46)'||bg==='#1a1a2e'?'white':'#333';ctx.font='bold 10px sans-serif';ctx.fillText(cells[0].textContent.trim(),pad,y+lH/2);return;}
+    const badge=cells[0].querySelector('.badge');
+    if(badge){ctx.fillStyle=badge.style.background||'#888';ctx.beginPath();ctx.arc(pad+4,y+lH/2,4,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle='#1a1a2e';ctx.font='12px sans-serif';ctx.textBaseline='middle';ctx.fillText(cells[0].textContent.trim(),pad+12,y+lH/2);
+    if(cells[1]){ctx.font='bold 13px sans-serif';ctx.textAlign='right';ctx.fillText(cells[1].textContent.trim(),W/2+80,y+lH/2);ctx.textAlign='left';}
+    if(cells[2]){ctx.fillStyle='#888';ctx.font='10px sans-serif';ctx.textAlign='right';const m=cells[2].textContent.trim();ctx.fillText(m.length>22?m.slice(0,22)+'…':m,W-pad,y+lH/2);ctx.textAlign='left';}
+    ctx.strokeStyle='#eee';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(0,y+lH);ctx.lineTo(W,y+lH);ctx.stroke();
+  });
+  return canvas;
+}
+function saveReportPNG(){
+  const ps=loadProjs();const p=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  const fname=`${safe(p?.name||'補修図面')}_レポート.png`;
+  const a=document.createElement('a');a.href=buildRepCanvas().toDataURL('image/png');a.download=fname;a.click();toast(`⬇️ ${fname} を保存`);
+}
+function printReport(){
+  const url=buildRepCanvas().toDataURL('image/png');
+  const old=document.getElementById('printOverlay');if(old)old.remove();
+  const overlay=document.createElement('div');overlay.id='printOverlay';
+  overlay.style.cssText='position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;overflow-y:auto;';
+  const tb=document.createElement('div');tb.style.cssText='padding:10px 14px;background:#1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;position:sticky;top:0;z-index:1;';
+  const ps=loadProjs();const p=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  const closeBtn=document.createElement('button');closeBtn.textContent='✕ 閉じる';closeBtn.style.cssText='padding:8px 12px;background:#444;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;';closeBtn.onclick=()=>overlay.remove();
+  const dl=document.createElement('a');dl.href=url;dl.download=`${safe(p?.name||'補修図面')}_レポート.png`;dl.textContent='⬇️ PNG保存';dl.style.cssText='padding:8px 14px;background:#27ae60;color:white;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;';
+  const hint=document.createElement('div');hint.style.cssText='width:100%;color:#aaa;font-size:11px;padding-top:4px;';hint.textContent='📌 PNG保存 → 写真アプリ → 共有（□↑）→「プリント」';
+  const title=document.createElement('span');title.style.cssText='color:white;font-size:13px;font-weight:700;flex:1;';title.textContent='レポート印刷';
+  tb.appendChild(title);tb.appendChild(dl);tb.appendChild(closeBtn);tb.appendChild(hint);
+  const img=document.createElement('img');img.src=url;img.style.cssText='width:100%;height:auto;display:block;';
+  overlay.appendChild(tb);overlay.appendChild(img);document.body.appendChild(overlay);
 }
 
 // ===== Excel出力 =====
 async function saveReportExcel(){
-  const projects = loadProjects();
-  const proj = currentProjectId ? projects.find(p => p.id === currentProjectId) : null;
-  const defaultName = proj?.name || '補修図面';
-  const today = new Date().toLocaleDateString('ja-JP');
-
-  // 現場情報入力モーダル
-  let projName = defaultName, dateStr = today, staffStr = '';
+  const ps=loadProjs();const proj=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
+  const defName=proj?.name||'補修図面';const today=new Date().toLocaleDateString('ja-JP');
+  let projName=defName,dateStr=today,staffStr='';
   await new Promise(resolve=>{
-    const old=document.getElementById('excelInfoModal');
-    if(old)old.remove();
-    const modal=document.createElement('div');
-    modal.id='excelInfoModal';
+    const old=document.getElementById('excelModal');if(old)old.remove();
+    const modal=document.createElement('div');modal.id='excelModal';
     modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:5000;display:flex;align-items:center;justify-content:center;';
-    modal.innerHTML=`
-      <div style="background:#1a1a2e;border-radius:18px;padding:24px;width:min(420px,90vw);color:white;">
-        <p style="font-size:15px;font-weight:700;margin-bottom:16px;color:#f5a623;">📊 Excelレポート出力</p>
-        <div style="margin-bottom:12px;">
-          <label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">現場名</label>
-          <input id="ei_name" type="text" value="${defaultName}"
-            style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;">
-        </div>
-        <div style="margin-bottom:12px;">
-          <label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">調査日</label>
-          <input id="ei_date" type="text" value="${today}"
-            style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;">
-        </div>
-        <div style="margin-bottom:18px;">
-          <label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">担当者</label>
-          <input id="ei_staff" type="text" placeholder="例）山田太郎"
-            style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;">
-        </div>
-        <div style="display:flex;gap:10px;">
-          <button onclick="document.getElementById('excelInfoModal').remove()"
-            style="flex:1;padding:12px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;touch-action:manipulation;">キャンセル</button>
-          <button id="ei_ok"
-            style="flex:1;padding:12px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">出力する</button>
-        </div>
-      </div>`;
+    modal.innerHTML=`<div style="background:#1a1a2e;border-radius:18px;padding:24px;width:min(420px,90vw);color:white;"><p style="font-size:15px;font-weight:700;margin-bottom:16px;color:#f5a623;">📊 Excelレポート出力</p><div style="margin-bottom:12px;"><label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">現場名</label><input id="ei_name" type="text" value="${defName}" style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;"></div><div style="margin-bottom:12px;"><label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">調査日</label><input id="ei_date" type="text" value="${today}" style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;"></div><div style="margin-bottom:18px;"><label style="font-size:11px;color:#aaa;display:block;margin-bottom:4px;">担当者</label><input id="ei_staff" type="text" placeholder="例）山田太郎" style="width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;font-family:inherit;background:#2a2a4a;color:white;"></div><div style="display:flex;gap:10px;"><button onclick="document.getElementById('excelModal').remove()" style="flex:1;padding:12px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;">キャンセル</button><button id="ei_ok" style="flex:1;padding:12px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;">出力する</button></div></div>`;
     document.body.appendChild(modal);
     setTimeout(()=>document.getElementById('ei_name')?.focus(),100);
-    document.getElementById('ei_ok').onclick=()=>{
-      projName  = document.getElementById('ei_name')?.value?.trim()||defaultName;
-      dateStr   = document.getElementById('ei_date')?.value?.trim()||today;
-      staffStr  = document.getElementById('ei_staff')?.value?.trim()||'';
-      modal.remove();
-      resolve();
-    };
+    document.getElementById('ei_ok').onclick=()=>{projName=document.getElementById('ei_name')?.value?.trim()||defName;dateStr=document.getElementById('ei_date')?.value?.trim()||today;staffStr=document.getElementById('ei_staff')?.value?.trim()||'';modal.remove();resolve();};
   });
-
-  const safe = s => s.replace(/[\/\\:*?"<>|]/g, '_');
-  showToast('📊 Excelを生成中...');
-
-  // JSZipをロード
-  await new Promise((resolve, reject) => {
-    if(window.JSZip){ resolve(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-    s.onload = resolve; s.onerror = reject;
-    document.head.appendChild(s);
-  });
-
-  // 全シートのマーカーを集計
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  toast('📊 Excelを生成中...');
+  await new Promise((res,rej)=>{if(window.JSZip){res();return;}const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
   await saveCurrentSheet();
-  const allStats = {};
-  Object.keys(DEFECTS).forEach(k => allStats[k] = { total: 0, count: 0 });
-  sheets.forEach((sheet, i) => {
-    const ms = i === currentSheetIdx ? markers : (sheet.markers || []);
-    ms.forEach(m => {
-      allStats[m.type].total += (m.value || 0);
-      allStats[m.type].count++;
-    });
-  });
-
-  // XMLを生成
-  const sharedStrings = [];
-  const strMap = {};
-  function si(s){
-    const key = String(s);
-    if(key in strMap) return strMap[key];
-    const idx = sharedStrings.length;
-    strMap[key] = idx;
-    sharedStrings.push(key);
-    return idx;
-  }
-
-  // カラー定義
-  const COLORS = {
-    crack:   '27AE60', crack03: '1A1A2E', peel:  'E94560',
-    inject:  'E67E22', burst:   '2980B9', float: '8E44AD',
-    tile:    'F39C12', other:   '7F8C8D'
-  };
-
-  // シートデータを構築
-  const rows = [];
-
-  // ヘッダー行1（タイトル）
-  rows.push(`<row r="1" ht="36" customHeight="1">
-    <c r="A1" t="s" s="1"><v>${si(projName + '　補修調査レポート')}</v></c>
-  </row>`);
-
-  // ヘッダー行2（項目ラベル）
-  rows.push(`<row r="2" ht="24" customHeight="1">
-    <c r="A2" t="s" s="2"><v>${si('現場名')}</v></c>
-    <c r="B2" t="s" s="3"><v>${si(projName)}</v></c>
-    <c r="D2" t="s" s="2"><v>${si('調査日')}</v></c>
-    <c r="E2" t="s" s="3"><v>${si(dateStr)}</v></c>
-    <c r="F2" t="s" s="2"><v>${si('担当者')}</v></c>
-    <c r="G2" t="s" s="3"><v>${si(staffStr)}</v></c>
-  </row>`);
-
-  // 空白行
+  const allStats={};Object.keys(DEFECTS).forEach(k=>allStats[k]={total:0,count:0});
+  sheets.forEach((sheet,i)=>{const ms=i===currentSheetIdx?markers:(sheet.markers||[]);ms.forEach(m=>{allStats[m.type].total+=(m.value||0);allStats[m.type].count++;});});
+  const ss=[],sm={};
+  function si(s){const key=String(s);if(key in sm)return sm[key];const idx=ss.length;sm[key]=idx;ss.push(key);return idx;}
+  const rows=[];
+  rows.push(`<row r="1" ht="36" customHeight="1"><c r="A1" t="s" s="1"><v>${si(projName+'　補修調査レポート')}</v></c></row>`);
+  rows.push(`<row r="2" ht="24" customHeight="1"><c r="A2" t="s" s="2"><v>${si('現場名')}</v></c><c r="B2" t="s" s="3"><v>${si(projName)}</v></c><c r="D2" t="s" s="2"><v>${si('調査日')}</v></c><c r="E2" t="s" s="3"><v>${si(dateStr)}</v></c><c r="F2" t="s" s="2"><v>${si('担当者')}</v></c><c r="G2" t="s" s="3"><v>${si(staffStr)}</v></c></row>`);
   rows.push(`<row r="3" ht="10" customHeight="1"></row>`);
-
-  // 集計表ヘッダー
-  rows.push(`<row r="4" ht="28" customHeight="1">
-    <c r="A4" t="s" s="1"><v>${si('■ 補修数量 集計表')}</v></c>
-  </row>`);
-
-  rows.push(`<row r="5" ht="26" customHeight="1">
-    <c r="A5" t="s" s="4"><v>${si('No.')}</v></c>
-    <c r="B5" t="s" s="4"><v>${si('補修種別')}</v></c>
-    <c r="C5" t="s" s="4"><v>${si('記号')}</v></c>
-    <c r="D5" t="s" s="4"><v>${si('単位')}</v></c>
-    <c r="E5" t="s" s="4"><v>${si('数量')}</v></c>
-    <c r="F5" t="s" s="4"><v>${si('備考')}</v></c>
-  </row>`);
-
-  // 種別データ行
-  const defectList = [
-    {key:'crack',   label:'ひび割れ',     symbol:'〰', unit:'m'},
-    {key:'crack03', label:'ひび割れ(0.3↑)',symbol:'〰', unit:'m'},
-    {key:'peel',    label:'剥離・浮き',   symbol:'⭕', unit:'㎡'},
-    {key:'inject',  label:'浮き注入',     symbol:'⬜', unit:'穴'},
-    {key:'burst',   label:'欠損・爆裂',   symbol:'△', unit:'箇所'},
-    {key:'float',   label:'タイル浮き',   symbol:'⬜', unit:'㎡'},
-    {key:'tile',    label:'タイル貼替',   symbol:'⬜', unit:'枚'},
-    {key:'other',   label:'その他',       symbol:'⭕', unit:'箇所'},
-  ];
-
-  defectList.forEach((d, i) => {
-    const rowNum = 6 + i;
-    const s = allStats[d.key] || { total: 0, count: 0 };
-    const val = s.total > 0 ? (s.total % 1 === 0 ? s.total : parseFloat(s.total.toFixed(2))) : s.count;
-    const style = i % 2 === 0 ? 5 : 6;
-    rows.push(`<row r="${rowNum}" ht="24" customHeight="1">
-      <c r="A${rowNum}" t="n" s="7"><v>${i+1}</v></c>
-      <c r="B${rowNum}" t="s" s="${style}"><v>${si(d.label)}</v></c>
-      <c r="C${rowNum}" t="s" s="${style}"><v>${si(d.symbol)}</v></c>
-      <c r="D${rowNum}" t="s" s="${style}"><v>${si(d.unit)}</v></c>
-      <c r="E${rowNum}" t="n" s="8"><v>${val || 0}</v></c>
-      <c r="F${rowNum}" t="s" s="${style}"><v>${si(s.count + 'マーカー')}</v></c>
-    </row>`);
+  rows.push(`<row r="4" ht="28" customHeight="1"><c r="A4" t="s" s="1"><v>${si('■ 補修数量 集計表')}</v></c></row>`);
+  rows.push(`<row r="5" ht="26" customHeight="1"><c r="A5" t="s" s="4"><v>${si('No.')}</v></c><c r="B5" t="s" s="4"><v>${si('補修種別')}</v></c><c r="C5" t="s" s="4"><v>${si('記号')}</v></c><c r="D5" t="s" s="4"><v>${si('単位')}</v></c><c r="E5" t="s" s="4"><v>${si('数量')}</v></c><c r="F5" t="s" s="4"><v>${si('備考')}</v></c></row>`);
+  const dl=[{key:'crack',label:'ひび割れ',sym:'〰',unit:'m'},{key:'crack03',label:'ひび割れ(0.3↑)',sym:'〰',unit:'m'},{key:'peel',label:'剥離・浮き',sym:'⭕',unit:'㎡'},{key:'inject',label:'浮き注入',sym:'⬜',unit:'穴'},{key:'burst',label:'欠損・爆裂',sym:'△',unit:'箇所'},{key:'float',label:'タイル浮き',sym:'⬜',unit:'㎡'},{key:'tile',label:'タイル貼替',sym:'⬜',unit:'枚'},{key:'other',label:'その他',sym:'⭕',unit:'箇所'}];
+  dl.forEach((d,i)=>{
+    const rn=6+i;const s=allStats[d.key]||{total:0,count:0};const val=s.total>0?(s.total%1===0?s.total:parseFloat(s.total.toFixed(2))):s.count;const st=i%2===0?5:6;
+    rows.push(`<row r="${rn}" ht="24" customHeight="1"><c r="A${rn}" t="n" s="7"><v>${i+1}</v></c><c r="B${rn}" t="s" s="${st}"><v>${si(d.label)}</v></c><c r="C${rn}" t="s" s="${st}"><v>${si(d.sym)}</v></c><c r="D${rn}" t="s" s="${st}"><v>${si(d.unit)}</v></c><c r="E${rn}" t="n" s="8"><v>${val||0}</v></c><c r="F${rn}" t="s" s="${st}"><v>${si(s.count+'マーカー')}</v></c></row>`);
   });
-
-  // 合計行
-  const totalRow = 6 + defectList.length;
-  const totalVal = defectList.reduce((sum, d) => {
-    const s = allStats[d.key] || { total: 0, count: 0 };
-    return sum + (s.total > 0 ? s.total : s.count);
-  }, 0);
-  rows.push(`<row r="${totalRow}" ht="30" customHeight="1">
-    <c r="A${totalRow}" t="s" s="1"><v>${si('合　計')}</v></c>
-    <c r="E${totalRow}" t="n" s="9"><v>${parseFloat(totalVal.toFixed(2))}</v></c>
-  </row>`);
-
-  // 図面別明細ヘッダー
-  const detailStart = totalRow + 2;
-  rows.push(`<row r="${detailStart}" ht="30" customHeight="1">
-    <c r="A${detailStart}" t="s" s="1"><v>${si('■ 図面別 補修明細')}</v></c>
-  </row>`);
-  rows.push(`<row r="${detailStart+1}" ht="26" customHeight="1">
-    <c r="A${detailStart+1}" t="s" s="4"><v>${si('図面名')}</v></c>
-    <c r="B${detailStart+1}" t="s" s="4"><v>${si('種別')}</v></c>
-    <c r="C${detailStart+1}" t="s" s="4"><v>${si('単位')}</v></c>
-    <c r="D${detailStart+1}" t="s" s="4"><v>${si('数量')}</v></c>
-    <c r="E${detailStart+1}" t="s" s="4"><v>${si('メモ')}</v></c>
-  </row>`);
-
-  // 図面別明細データ
-  let detailRow = detailStart + 2;
-  sheets.forEach((sheet, si2) => {
-    const ms = si2 === currentSheetIdx ? markers : (sheet.markers || []);
-    if(ms.length === 0) return;
-    ms.forEach((m, mi) => {
-      const d = DEFECTS[m.type];
-      if(!d) return;
-      const val = m.value > 0 ? m.value : '';
-      const rowStyle = mi % 2 === 0 ? 5 : 6;
-      rows.push(`<row r="${detailRow}" ht="22" customHeight="1">
-        <c r="A${detailRow}" t="s" s="${rowStyle}"><v>${si(sheet.name)}</v></c>
-        <c r="B${detailRow}" t="s" s="${rowStyle}"><v>${si(d.label)}</v></c>
-        <c r="C${detailRow}" t="s" s="${rowStyle}"><v>${si(d.unitLabel)}</v></c>
-        ${val !== '' ? `<c r="D${detailRow}" t="n" s="8"><v>${val}</v></c>` : `<c r="D${detailRow}" t="s" s="8"><v>${si('')}</v></c>`}
-        <c r="E${detailRow}" t="s" s="${rowStyle}"><v>${si(m.memo||'')}</v></c>
-      </row>`);
-      detailRow++;
+  const tr=6+dl.length;const tv=dl.reduce((sum,d)=>{const s=allStats[d.key]||{total:0,count:0};return sum+(s.total>0?s.total:s.count);},0);
+  rows.push(`<row r="${tr}" ht="30" customHeight="1"><c r="A${tr}" t="s" s="1"><v>${si('合　計')}</v></c><c r="E${tr}" t="n" s="9"><v>${parseFloat(tv.toFixed(2))}</v></c></row>`);
+  const ds=tr+2;
+  rows.push(`<row r="${ds}" ht="30" customHeight="1"><c r="A${ds}" t="s" s="1"><v>${si('■ 図面別 補修明細')}</v></c></row>`);
+  rows.push(`<row r="${ds+1}" ht="26" customHeight="1"><c r="A${ds+1}" t="s" s="4"><v>${si('図面名')}</v></c><c r="B${ds+1}" t="s" s="4"><v>${si('種別')}</v></c><c r="C${ds+1}" t="s" s="4"><v>${si('単位')}</v></c><c r="D${ds+1}" t="s" s="4"><v>${si('数量')}</v></c><c r="E${ds+1}" t="s" s="4"><v>${si('メモ')}</v></c></row>`);
+  let dr=ds+2;
+  sheets.forEach((sheet,si2)=>{
+    const ms=si2===currentSheetIdx?markers:(sheet.markers||[]);if(!ms.length)return;
+    ms.forEach((m,mi)=>{
+      const d=DEFECTS[m.type];if(!d)return;const val=m.value>0?m.value:'';const rs=mi%2===0?5:6;
+      rows.push(`<row r="${dr}" ht="22" customHeight="1"><c r="A${dr}" t="s" s="${rs}"><v>${si(sheet.name)}</v></c><c r="B${dr}" t="s" s="${rs}"><v>${si(d.label)}</v></c><c r="C${dr}" t="s" s="${rs}"><v>${si(d.unitLabel)}</v></c>${val!==''?`<c r="D${dr}" t="n" s="8"><v>${val}</v></c>`:`<c r="D${dr}" t="s" s="8"><v>${si('')}</v></c>`}<c r="E${dr}" t="s" s="${rs}"><v>${si(m.memo||'')}</v></c></row>`);
+      dr++;
     });
   });
-
-  // sharedStrings XML
-  const ssXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${sharedStrings.length}" uniqueCount="${sharedStrings.length}">
-${sharedStrings.map(s=>`<si><t xml:space="preserve">${s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</t></si>`).join('\n')}
-</sst>`;
-
-  // styles XML（シンプルな定義）
-  const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <fonts count="5">
-    <font><sz val="11"/><name val="Arial"/></font>
-    <font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>
-    <font><b/><sz val="11"/><color rgb="FF1A1A2E"/><name val="Arial"/></font>
-    <font><sz val="11"/><color rgb="FF333333"/><name val="Arial"/></font>
-    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>
-  </fonts>
-  <fills count="6">
-    <fill><patternFill patternType="none"/></fill>
-    <fill><patternFill patternType="gray125"/></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FF1A1A2E"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFF8F9FA"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill>
-    <fill><patternFill patternType="solid"><fgColor rgb="FFFFF9C4"/></patternFill></fill>
-  </fills>
-  <borders count="2">
-    <border><left/><right/><top/><bottom/><diagonal/></border>
-    <border><left style="thin"><color rgb="FFCCCCCC"/></left><right style="thin"><color rgb="FFCCCCCC"/></right><top style="thin"><color rgb="FFCCCCCC"/></top><bottom style="thin"><color rgb="FFCCCCCC"/></bottom></border>
-  </borders>
-  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
-  <cellXfs count="10">
-    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
-    <xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"><alignment horizontal="left" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="3" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="4" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="center" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="center" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="2" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf>
-    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf>
-  </cellXfs>
-</styleSheet>`;
-
-  // sheet XML
-  const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <sheetView workbookViewId="0"><selection activeCell="A1"/></sheetView>
-  <sheetFormatPr defaultRowHeight="20"/>
-  <cols>
-    <col min="1" max="1" width="6" customWidth="1"/>
-    <col min="2" max="2" width="22" customWidth="1"/>
-    <col min="3" max="3" width="10" customWidth="1"/>
-    <col min="4" max="4" width="12" customWidth="1"/>
-    <col min="5" max="5" width="14" customWidth="1"/>
-    <col min="6" max="6" width="28" customWidth="1"/>
-  </cols>
-  <sheetData>${rows.join('\n')}</sheetData>
-  <pageSetup orientation="portrait" paperSize="9"/>
-</worksheet>`;
-
-  const wbXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <sheets><sheet name="補修レポート" sheetId="1" r:id="rId1"/></sheets>
-</workbook>`;
-
-  const wbRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>
-  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-</Relationships>`;
-
-  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-</Relationships>`;
-
-  const ct = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-  <Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>
-  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
-</Types>`;
-
-  const zip = new JSZip();
-  zip.file('[Content_Types].xml', ct);
-  zip.file('_rels/.rels', rels);
-  zip.file('xl/workbook.xml', wbXml);
-  zip.file('xl/_rels/workbook.xml.rels', wbRels);
-  zip.file('xl/worksheets/sheet1.xml', sheetXml);
-  zip.file('xl/sharedStrings.xml', ssXml);
-  zip.file('xl/styles.xml', stylesXml);
-
-  const blob = await zip.generateAsync({
-    type: 'blob',
-    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.download = `${safe(projName)}_レポート.xlsx`;
-  a.href = url; a.click();
-  URL.revokeObjectURL(url);
-  showToast(`📊 ${safe(projName)}_レポート.xlsx を保存しました`);
-}
-async function saveReportDocx(){
-  const projects=loadProjects();
-  const proj=currentProjectId?projects.find(p=>p.id===currentProjectId):null;
-  const projName=proj?.name||'補修図面';
-  const title=document.getElementById('repTitle').textContent;
-  const tbody=document.getElementById('repBody');
-  const rows=Array.from(tbody.querySelectorAll('tr'));
-  const date=new Date().toLocaleDateString('ja-JP');
-
-  // テーブル行データを収集
-  const tableRows=[];
-  rows.forEach(row=>{
-    const cells=row.querySelectorAll('td');
-    if(cells.length===0)return;
-    // セクションヘッダー行
-    if(cells.length===1){
-      tableRows.push({type:'header',text:cells[0].textContent.trim()});
-      return;
-    }
-    const badge=cells[0].querySelector('.badge');
-    const color=badge?badge.style.background.replace('#',''):'888888';
-    tableRows.push({
-      type:'data',
-      label:cells[0].textContent.trim(),
-      value:cells[1]?cells[1].textContent.trim():'',
-      memo:cells[2]?cells[2].textContent.trim():'',
-      color
-    });
-  });
-
-  // docx XMLを組み立て
-  const escape=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
-  function makeRow(cells, isHeader=false){
-    const shading=isHeader?`<w:shd w:val="clear" w:color="auto" w:fill="1A1A2E"/>`:'';
-    const textColor=isHeader?`<w:color w:val="FFFFFF"/>`:'';
-    const bold=isHeader?`<w:b/>`:'';
-    return `<w:tr>${cells.map(({text,w,align='left'})=>`
-      <w:tc>
-        <w:tcPr>
-          <w:tcW w:w="${w}" w:type="dxa"/>
-          ${shading}
-          <w:tcMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>
-        </w:tcPr>
-        <w:p><w:pPr><w:jc w:val="${align}"/></w:pPr>
-          <w:r><w:rPr>${bold}${textColor}<w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr><w:t xml:space="preserve">${escape(text)}</w:t></w:r>
-        </w:p>
-      </w:tc>`).join('')}</w:tr>`;
-  }
-
-  function makeSectionRow(text){
-    return `<w:tr>
-      <w:tc>
-        <w:tcPr><w:tcW w:w="9026" w:type="dxa"/><w:gridSpan w:val="3"/><w:shd w:val="clear" w:color="auto" w:fill="2A2A4A"/>
-          <w:tcMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar>
-        </w:tcPr>
-        <w:p><w:r><w:rPr><w:b/><w:color w:val="F5A623"/><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr><w:t>${escape(text)}</w:t></w:r></w:p>
-      </w:tc>
-    </w:tr>`;
-  }
-
-  const tblRows=[
-    makeRow([{text:'種別',w:3500},{text:'数量',w:2500,align:'right'},{text:'メモ',w:3026,align:'right'}],true),
-    ...tableRows.map(r=>{
-      if(r.type==='header') return makeSectionRow(r.text);
-      return makeRow([{text:r.label,w:3500},{text:r.value,w:2500,align:'right'},{text:r.memo,w:3026,align:'right'}]);
-    })
-  ];
-
-  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
-  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<w:body>
-  <w:p><w:pPr><w:jc w:val="center"/></w:pPr>
-    <w:r><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/></w:rPr><w:t>${escape(projName)} 補修調査レポート</w:t></w:r>
-  </w:p>
-  <w:p><w:pPr><w:jc w:val="center"/></w:pPr>
-    <w:r><w:rPr><w:sz w:val="20"/><w:szCs w:val="20"/><w:color w:val="888888"/></w:rPr><w:t>${escape(date)}</w:t></w:r>
-  </w:p>
-  <w:p><w:r><w:t> </w:t></w:r></w:p>
-  <w:p><w:r><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t>${escape(title)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t> </w:t></w:r></w:p>
-  <w:tbl>
-    <w:tblPr>
-      <w:tblW w:w="9026" w:type="dxa"/>
-      <w:tblBorders>
-        <w:top w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-        <w:left w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-        <w:bottom w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-        <w:right w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-        <w:insideH w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-        <w:insideV w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/>
-      </w:tblBorders>
-    </w:tblPr>
-    <w:tblGrid>
-      <w:gridCol w:w="3500"/>
-      <w:gridCol w:w="2500"/>
-      <w:gridCol w:w="3026"/>
-    </w:tblGrid>
-    ${tblRows.join('\n')}
-  </w:tbl>
-  <w:p><w:r><w:t> </w:t></w:r></w:p>
-  <w:sectPr>
-    <w:pgSz w:w="11906" w:h="16838"/>
-    <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
-  </w:sectPr>
-</w:body>
-</w:document>`;
-
-  const relsXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
-</Relationships>`;
-
-  const wordRelsXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-</Relationships>`;
-
-  const contentTypesXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-  <Default Extension="xml" ContentType="application/xml"/>
-  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-</Types>`;
-
-  // ZIP形式でdocxを生成（JSZipライブラリを動的ロード）
-  showToast('📝 Word文書を生成中...');
-
-  // JSZipをCDNから動的ロード
-  await new Promise((resolve,reject)=>{
-    if(window.JSZip){resolve();return;}
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-    s.onload=resolve;s.onerror=reject;
-    document.head.appendChild(s);
-  });
-
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ssXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${ss.length}" uniqueCount="${ss.length}">${ss.map(s=>`<si><t xml:space="preserve">${esc(s)}</t></si>`).join('')}</sst>`;
+  const stXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="5"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="16"/><color rgb="FFFFFFFF"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FF1A1A2E"/><name val="Arial"/></font><font><sz val="11"/><color rgb="FF333333"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Arial"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1A1A2E"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF8F9FA"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF9C4"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFCCCCCC"/></left><right style="thin"><color rgb="FFCCCCCC"/></right><top style="thin"><color rgb="FFCCCCCC"/></top><bottom style="thin"><color rgb="FFCCCCCC"/></bottom></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="10"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="4" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="left" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="2" fillId="5" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"><alignment horizontal="right" vertical="center"/></xf></cellXfs></styleSheet>`;
+  const shXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetView workbookViewId="0"><selection activeCell="A1"/></sheetView><sheetFormatPr defaultRowHeight="20"/><cols><col min="1" max="1" width="6" customWidth="1"/><col min="2" max="2" width="22" customWidth="1"/><col min="3" max="3" width="10" customWidth="1"/><col min="4" max="4" width="12" customWidth="1"/><col min="5" max="5" width="14" customWidth="1"/><col min="6" max="6" width="28" customWidth="1"/><col min="7" max="7" width="14" customWidth="1"/></cols><sheetData>${rows.join('\n')}</sheetData><pageSetup orientation="portrait" paperSize="9"/></worksheet>`;
+  const wbXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="補修レポート" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+  const wbR=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
   const zip=new JSZip();
-  zip.file('[Content_Types].xml',contentTypesXml);
-  zip.file('_rels/.rels',relsXml);
-  zip.file('word/document.xml',docXml);
-  zip.file('word/_rels/document.xml.rels',wordRelsXml);
-
-  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  a.download=`${safe(projName)}_レポート.docx`;
-  a.href=url;a.click();
-  URL.revokeObjectURL(url);
-  showToast(`📝 ${safe(projName)}_レポート.docx を保存しました`);
+  zip.file('[Content_Types].xml',ct);zip.file('_rels/.rels',rels);zip.file('xl/workbook.xml',wbXml);zip.file('xl/_rels/workbook.xml.rels',wbR);zip.file('xl/worksheets/sheet1.xml',shXml);zip.file('xl/sharedStrings.xml',ssXml);zip.file('xl/styles.xml',stXml);
+  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=`${safe(projName)}_レポート.xlsx`;a.href=url;a.click();URL.revokeObjectURL(url);
+  toast(`📊 ${safe(projName)}_レポート.xlsx を保存`);
 }
 
-// ===== レポートをCanvasに描画してPNG保存・印刷 =====
-function buildReportCanvas(){
-  const title=document.getElementById('repTitle').textContent;
-  const tbody=document.getElementById('repBody');
-  const rows=Array.from(tbody.querySelectorAll('tr'));
-
-  const W=640;
-  const lineH=32;
-  const headerH=60;
-  const padding=24;
-  const H=headerH + rows.length*lineH + padding*2;
-
-  const canvas=document.createElement('canvas');
-  canvas.width=W*2; canvas.height=H*2; // Retina対応
-  const ctx=canvas.getContext('2d');
-  ctx.scale(2,2);
-
-  // 背景
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(0,0,W,H);
-
-  // タイトル
-  ctx.fillStyle='#1a1a2e';
-  ctx.fillRect(0,0,W,headerH);
-  ctx.fillStyle='white';
-  ctx.font='bold 16px sans-serif';
-  ctx.textBaseline='middle';
-  ctx.fillText(title, padding, headerH/2);
-
-  // 日付
-  ctx.font='11px sans-serif';
-  ctx.fillStyle='rgba(255,255,255,0.7)';
-  ctx.textAlign='right';
-  ctx.fillText(new Date().toLocaleDateString('ja-JP'), W-padding, headerH/2);
-  ctx.textAlign='left';
-
-  // テーブルヘッダー
-  const thY=headerH+padding*0.5;
-  ctx.fillStyle='#f0f0f0';
-  ctx.fillRect(0,thY,W,lineH);
-  ctx.fillStyle='#555';
-  ctx.font='bold 12px sans-serif';
-  ctx.textBaseline='middle';
-  ctx.fillText('種別', padding, thY+lineH/2);
-  ctx.textAlign='right';
-  ctx.fillText('数量', W/2+80, thY+lineH/2);
-  ctx.fillText('メモ', W-padding, thY+lineH/2);
-  ctx.textAlign='left';
-
-  // テーブル行
-  rows.forEach((row,i)=>{
-    const y=headerH+padding*0.5+lineH*(i+1);
-    // 背景
-    ctx.fillStyle=i%2===0?'#ffffff':'#f8f8f8';
-    ctx.fillRect(0,y,W,lineH);
-
-    const cells=row.querySelectorAll('td');
-    if(cells.length===0){
-      // セクションヘッダー行
-      ctx.fillStyle=row.querySelector('td')?.style.background||'#e0e0e0';
-      const bgColor=row.querySelector('td[style*="1a1a2e"]')?'#1a1a2e':
-                    row.querySelector('td[style*="f0f0f0"]')?'#f0f0f0':'#e0e0e0';
-      ctx.fillStyle=bgColor;
-      ctx.fillRect(0,y,W,lineH);
-      const td=row.querySelector('td');
-      if(td){
-        ctx.fillStyle=bgColor==='#1a1a2e'?'white':'#333';
-        ctx.font='bold 11px sans-serif';
-        ctx.fillText(td.textContent.trim(), padding, y+lineH/2);
-      }
-      return;
-    }
-
-    ctx.font='13px sans-serif';
-    ctx.textBaseline='middle';
-
-    // バッジ（色丸）
+// ===== Word出力 =====
+async function saveReportDocx(){
+  const ps=loadProjs();const p=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
+  const projName=p?.name||'補修図面';const title=document.getElementById('repTitle').textContent;
+  const rows=Array.from(document.getElementById('repBody').querySelectorAll('tr'));
+  const date=new Date().toLocaleDateString('ja-JP');
+  const tRows=[];
+  rows.forEach(row=>{
+    const cells=row.querySelectorAll('td');if(!cells.length)return;
+    if(cells.length===1){tRows.push({type:'hdr',text:cells[0].textContent.trim()});return;}
     const badge=cells[0].querySelector('.badge');
-    if(badge){
-      const color=badge.style.background||'#888';
-      ctx.fillStyle=color;
-      ctx.beginPath();
-      ctx.arc(padding+5,y+lineH/2,5,0,Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle='#1a1a2e';
-      ctx.fillText(cells[0].textContent.trim(), padding+14, y+lineH/2);
-    } else {
-      ctx.fillStyle='#333';
-      ctx.fillText(cells[0].textContent.trim(), padding, y+lineH/2);
-    }
-
-    // 数量
-    if(cells[1]){
-      ctx.fillStyle='#1a1a2e';
-      ctx.font='bold 14px sans-serif';
-      ctx.textAlign='right';
-      ctx.fillText(cells[1].textContent.trim(), W/2+80, y+lineH/2);
-      ctx.textAlign='left';
-    }
-
-    // メモ
-    if(cells[2]){
-      ctx.fillStyle='#888';
-      ctx.font='11px sans-serif';
-      ctx.textAlign='right';
-      const memo=cells[2].textContent.trim();
-      // 長いメモは省略
-      const maxW=W/2-padding;
-      ctx.fillText(memo.length>20?memo.slice(0,20)+'…':memo, W-padding, y+lineH/2);
-      ctx.textAlign='left';
-    }
-
-    // 区切り線
-    ctx.strokeStyle='#eee';
-    ctx.lineWidth=0.5;
-    ctx.beginPath();
-    ctx.moveTo(0,y+lineH);
-    ctx.lineTo(W,y+lineH);
-    ctx.stroke();
+    tRows.push({type:'data',label:cells[0].textContent.trim(),value:cells[1]?cells[1].textContent.trim():'',memo:cells[2]?cells[2].textContent.trim():''});
   });
-
-  return canvas;
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const mkRow=(cells,isH=false)=>`<w:tr>${cells.map(({text,w,align='left'})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${isH?`<w:shd w:val="clear" w:color="auto" w:fill="1A1A2E"/>`:''}
+<w:tcMar><w:top w:w="80" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tcMar></w:tcPr>
+<w:p><w:pPr><w:jc w:val="${align}"/></w:pPr><w:r><w:rPr>${isH?'<w:b/>':''}<w:sz w:val="20"/><w:szCs w:val="20"/>${isH?'<w:color w:val="FFFFFF"/>':''}</w:rPr><w:t xml:space="preserve">${esc(text)}</w:t></w:r></w:p></w:tc>`).join('')}</w:tr>`;
+  const mkSec=text=>`<w:tr><w:tc><w:tcPr><w:tcW w:w="9026" w:type="dxa"/><w:gridSpan w:val="3"/><w:shd w:val="clear" w:color="auto" w:fill="2A2A4A"/></w:tcPr><w:p><w:r><w:rPr><w:b/><w:color w:val="F5A623"/><w:sz w:val="20"/></w:rPr><w:t>${esc(text)}</w:t></w:r></w:p></w:tc></w:tr>`;
+  const tableRows=[mkRow([{text:'種別',w:3500},{text:'数量',w:2500,align:'right'},{text:'メモ',w:3026,align:'right'}],true),...tRows.map(r=>r.type==='hdr'?mkSec(r.text):mkRow([{text:r.label,w:3500},{text:r.value,w:2500,align:'right'},{text:r.memo,w:3026,align:'right'}]))];
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="36"/></w:rPr><w:t>${esc(projName)} 補修調査レポート</w:t></w:r></w:p><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:sz w:val="20"/><w:color w:val="888888"/></w:rPr><w:t>${esc(date)}</w:t></w:r></w:p><w:p><w:r><w:t> </w:t></w:r></w:p><w:p><w:r><w:rPr><w:b/><w:sz w:val="24"/></w:rPr><w:t>${esc(title)}</w:t></w:r></w:p><w:p><w:r><w:t> </w:t></w:r></w:p><w:tbl><w:tblPr><w:tblW w:w="9026" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/><w:left w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/><w:right w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="CCCCCC"/></w:tblBorders></w:tblPr><w:tblGrid><w:gridCol w:w="3500"/><w:gridCol w:w="2500"/><w:gridCol w:w="3026"/></w:tblGrid>${tableRows.join('')}</w:tbl><w:p><w:r><w:t> </w:t></w:r></w:p><w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`;
+  await new Promise((res,rej)=>{if(window.JSZip){res();return;}const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  const zip=new JSZip();
+  const relsXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const wRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`;
+  const ctXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`;
+  zip.file('[Content_Types].xml',ctXml);zip.file('_rels/.rels',relsXml);zip.file('word/document.xml',docXml);zip.file('word/_rels/document.xml.rels',wRels);
+  const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
+  a.download=`${safe(projName)}_レポート.docx`;a.href=url;a.click();URL.revokeObjectURL(url);
+  toast(`📝 ${safe(projName)}_レポート.docx を保存`);
 }
 
-function saveReportPNG(){
-  const canvas=buildReportCanvas();
-  const projects=loadProjects();
-  const proj=currentProjectId?projects.find(p=>p.id===currentProjectId):null;
-  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  const fname=`${safe(proj?.name||'補修図面')}_レポート.png`;
-  const a=document.createElement('a');
-  a.href=canvas.toDataURL('image/png');
-  a.download=fname;
-  a.click();
-  showToast(`⬇️ ${fname} を保存しました`);
+// ===== ユーティリティ =====
+function toast(msg,color='#27ae60'){
+  const old=document.getElementById('_toast');if(old)old.remove();
+  const t=document.createElement('div');t.id='_toast';
+  t.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${color};color:white;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;z-index:9000;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.3);pointer-events:none;`;
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
 }
-
-function printReport(){
-  const canvas=buildReportCanvas();
-  const url=canvas.toDataURL('image/png');
-
-  const old=document.getElementById('printOverlay');
-  if(old)old.remove();
-
-  const overlay=document.createElement('div');
-  overlay.id='printOverlay';
-  overlay.style.cssText='position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;overflow-y:auto;';
-
-  const toolbar=document.createElement('div');
-  toolbar.style.cssText='padding:10px 14px;background:#1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;position:sticky;top:0;z-index:1;';
-
-  const closeBtn=document.createElement('button');
-  closeBtn.textContent='✕ 閉じる';
-  closeBtn.style.cssText='padding:8px 12px;background:#444;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;touch-action:manipulation;';
-  closeBtn.onclick=()=>overlay.remove();
-
-  const dlLink=document.createElement('a');
-  const projects=loadProjects();
-  const proj=currentProjectId?projects.find(p=>p.id===currentProjectId):null;
-  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  dlLink.href=url;
-  dlLink.download=`${safe(proj?.name||'補修図面')}_レポート.png`;
-  dlLink.textContent='⬇️ PNG保存';
-  dlLink.style.cssText='padding:8px 14px;background:#27ae60;color:white;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;touch-action:manipulation;';
-
-  const hint=document.createElement('div');
-  hint.style.cssText='width:100%;color:#aaa;font-size:11px;padding-top:4px;line-height:1.6;';
-  hint.textContent='📌 印刷：PNG保存 → 写真アプリ → 共有（□↑）→「プリント」';
-
-  const title=document.createElement('span');
-  title.style.cssText='color:white;font-size:13px;font-weight:700;flex:1;';
-  title.textContent='レポート印刷';
-
-  toolbar.appendChild(title);
-  toolbar.appendChild(dlLink);
-  toolbar.appendChild(closeBtn);
-  toolbar.appendChild(hint);
-
-  const img=document.createElement('img');
-  img.src=url;
-  img.style.cssText='width:100%;height:auto;display:block;';
-
-  overlay.appendChild(toolbar);
-  overlay.appendChild(img);
-  document.body.appendChild(overlay);
+function confirmModal(msg,onOk){
+  const old=document.getElementById('_confirm');if(old)old.remove();
+  const modal=document.createElement('div');modal.id='_confirm';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML=`<div style="background:#1a1a2e;border-radius:16px;padding:22px;width:min(320px,88vw);color:white;"><p style="font-size:14px;margin-bottom:18px;line-height:1.6;">${msg}</p><div style="display:flex;gap:10px;"><button id="_cfNo" style="flex:1;padding:11px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;">キャンセル</button><button id="_cfYes" style="flex:1;padding:11px;border:none;border-radius:10px;background:#e94560;color:white;font-size:14px;font-weight:700;cursor:pointer;">削除</button></div></div>`;
+  document.body.appendChild(modal);
+  document.getElementById('_cfNo').onclick=()=>modal.remove();
+  document.getElementById('_cfYes').onclick=()=>{modal.remove();onOk();};
+}
+function inputModal(title,defaultVal,onOk){
+  const old=document.getElementById('_input');if(old)old.remove();
+  const modal=document.createElement('div');modal.id='_input';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML=`<div style="background:#1a1a2e;border-radius:16px;padding:22px;width:min(340px,88vw);color:white;"><p style="font-size:14px;font-weight:700;margin-bottom:12px;">${title}</p><input id="_inputVal" type="text" value="${defaultVal}" style="width:100%;padding:11px 13px;border-radius:10px;border:none;font-size:15px;font-family:inherit;background:#2a2a4a;color:white;margin-bottom:14px;" onkeydown="if(event.key==='Enter')document.getElementById('_inputOk').click()"><div style="display:flex;gap:10px;"><button onclick="document.getElementById('_input').remove()" style="flex:1;padding:11px;border:none;border-radius:10px;background:#2a2a4a;color:#ccc;font-size:14px;cursor:pointer;">キャンセル</button><button id="_inputOk" style="flex:1;padding:11px;border:none;border-radius:10px;background:#f5a623;color:#1a1a1a;font-size:14px;font-weight:700;cursor:pointer;">変更</button></div></div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>{const i=document.getElementById('_inputVal');if(i){i.focus();i.select();}},100);
+  document.getElementById('_inputOk').onclick=()=>{const v=document.getElementById('_inputVal')?.value?.trim();modal.remove();if(v)onOk(v);};
 }
 
 // ===== 起動 =====
-window.addEventListener('load',()=>{
-  renderProjectList();
-  document.getElementById('projectScreen').style.display='flex';
-});
-
+window.addEventListener('load',()=>{renderProjList();document.getElementById('projectScreen').style.display='flex';});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){cancelMark();closeReport();closeAllDrawers();}
   if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undoLast();}
 });
-
-// ページを閉じる・バックグラウンド移行時に保存
-document.addEventListener('visibilitychange', async()=>{
-  if(document.visibilityState === 'hidden' && currentProjectId){
-    await saveCurrentProject();
-  }
-});
-
-// Service Worker
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-}
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
 </html>
