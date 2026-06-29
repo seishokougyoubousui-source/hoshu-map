@@ -164,7 +164,6 @@ header{background:#1a1a2e;padding:6px 12px;display:flex;align-items:center;justi
 <div id="dropMenu">
   <button class="dm-btn" onclick="document.getElementById('fileInput').click();closeMenu()">📂 図面を追加</button>
   <button class="dm-btn" onclick="savePNG();closeMenu()">⬇️ PNG保存</button>
-  <button class="dm-btn" onclick="sharePNG();closeMenu()">📤 図面を共有</button>
   <button class="dm-btn" onclick="printDrawing();closeMenu()">🖨 図面印刷</button>
   <button class="dm-btn" onclick="showReport();closeMenu()">📋 レポート</button>
   <div class="dm-sep"></div>
@@ -172,10 +171,9 @@ header{background:#1a1a2e;padding:6px 12px;display:flex;align-items:center;justi
   <button class="dm-btn" style="color:#f5a623;" onclick="document.getElementById('restoreInput').click();closeMenu()">📥 データ読み込み</button>
   <button class="dm-btn" style="color:#27ae60;" onclick="saveReportExcel();closeMenu()">📊 Excelレポート出力</button>
   <button class="dm-btn" style="color:#2980b9;" onclick="saveReportDocx();closeMenu()">📝 Word出力</button>
-  <button class="dm-btn" style="color:#e67e22;" onclick="shareAll();closeMenu()">📤 全データを共有</button>
 </div>
 <div id="menuOverlay" onclick="closeMenu()"></div>
-<input type="file" id="fileInput" accept="image/*,application/pdf" onchange="loadFile(event)" style="display:none">
+<input type="file" id="fileInput" accept="image/*" onchange="loadFile(event)" style="display:none">
 <input type="file" id="restoreInput" accept=".json,application/json,text/plain" onchange="restoreProject(event)" style="display:none">
 
 <!-- タブバー -->
@@ -188,7 +186,7 @@ header{background:#1a1a2e;padding:6px 12px;display:flex;align-items:center;justi
   <!-- 1段目：種別・モード・連続 -->
   <div style="display:flex;align-items:center;gap:5px;padding:4px 10px;min-height:32px;">
     <div class="ind-dot" id="indDot" style="background:#27ae60;width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>
-    <span id="indType" style="font-size:11px;color:#ccc;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">クラック</span>
+    <span id="indType" style="font-size:11px;color:#ccc;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">ひび割れ</span>
     <button class="mode-btn" id="modeBtn" onclick="toggleMode()" style="background:#27ae60;color:white;padding:4px 10px;border-radius:16px;border:none;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">✏️ マーキング</button>
     <button id="quickBtn" onclick="toggleQuickMode()" style="background:#2a2a4a;color:#888;padding:4px 10px;border-radius:16px;border:none;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">⚡ 連続</button>
   </div>
@@ -270,10 +268,8 @@ header{background:#1a1a2e;padding:6px 12px;display:flex;align-items:center;justi
     <div class="modal-btns">
       <button class="mb-btn" style="background:#eee;color:#555;" onclick="closeReport()">閉じる</button>
       <button class="mb-btn" style="background:#27ae60;color:white;" onclick="savePNG()">⬇️ 図面PNG</button>
-      <button class="mb-btn" style="background:#2ecc71;color:white;" onclick="sharePNG()">📤 図面共有</button>
       <button class="mb-btn" style="background:#1a1a2e;color:white;" onclick="printDrawing()">🖨 図面印刷</button>
       <button class="mb-btn" style="background:#8e44ad;color:white;" onclick="saveReportPNG()">⬇️ レポートPNG</button>
-      <button class="mb-btn" style="background:#9b59b6;color:white;" onclick="shareReportPNG()">📤 レポート共有</button>
       <button class="mb-btn" style="background:#e67e22;color:white;" onclick="printReport()">🖨 レポート印刷</button>
       <button class="mb-btn" style="background:#27ae60;color:white;" onclick="saveReportExcel()">📊 Excel</button>
       <button class="mb-btn" style="background:#2980b9;color:white;" onclick="saveReportDocx()">📝 Word</button>
@@ -285,8 +281,8 @@ header{background:#1a1a2e;padding:6px 12px;display:flex;align-items:center;justi
 'use strict';
 // ===== 定数 =====
 const DEFECTS={
-  crack:  {label:'クラック',    color:'#27ae60',shape:'wave',    unit:'m',  unitLabel:'m', sym:'〜'},
-  crack03:{label:'クラック0.3↑',color:'#4fc3f7',shape:'wave',    unit:'m',  unitLabel:'m', sym:'U〜'},
+  crack:  {label:'ひび割れ',    color:'#27ae60',shape:'wave',    unit:'m',  unitLabel:'m'},
+  crack03:{label:'ひび割れ0.3↑',color:'#222222',shape:'wave',    unit:'m',  unitLabel:'m'},
   peel:   {label:'剥離・浮き',  color:'#e94560',shape:'circle',  unit:'m2', unitLabel:'㎡'},
   inject: {label:'浮き注入',    color:'#e67e22',shape:'rect',    unit:'pc', unitLabel:'穴'},
   burst:  {label:'欠損・爆裂',  color:'#2980b9',shape:'triangle',unit:'pc', unitLabel:'箇所'},
@@ -310,19 +306,18 @@ const container=document.getElementById('canvasContainer');
 
 // ===== 種別ボタン =====
 (function(){
-  const icons={wave:'〜',circle:'⭕',triangle:'△',rect:'⬜'};
+  const icons={wave:'〰',circle:'⭕',triangle:'△',rect:'⬜'};
   const grid=document.getElementById('defectGrid');
   const sel=document.getElementById('editTypeSelect');
   Object.entries(DEFECTS).forEach(([k,d])=>{
-    const symbol=d.sym||icons[d.shape];
     const b=document.createElement('button');
     b.className='def-btn'+(k==='crack'?' active':'');
     b.dataset.type=k;
-    b.innerHTML=`<div class="def-dot" style="background:${d.color}"></div>${d.label}${symbol}`;
+    b.innerHTML=`<div class="def-dot" style="background:${d.color}"></div>${d.label}${icons[d.shape]}`;
     b.onclick=()=>selectDefect(k);
     grid.appendChild(b);
     const o=document.createElement('option');
-    o.value=k;o.textContent=d.label+symbol;
+    o.value=k;o.textContent=d.label+icons[d.shape];
     sel.appendChild(o);
   });
 })();
@@ -435,7 +430,7 @@ async function openProjectScreen(){
 async function saveCurrentSheet(){
   if(currentSheetIdx<0||!sheets[currentSheetIdx])return;
   sheets[currentSheetIdx].markers=[...markers];
-  if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/png'));}catch{}
+  if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/jpeg',.65));}catch{}
 }
 async function saveCurrent(){
   if(!currentProjectId)return;
@@ -475,7 +470,7 @@ function renameSheetDlg(idx){
 async function switchSheet(idx){
   if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
     sheets[currentSheetIdx].markers=[...markers];
-    if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/png'));}catch{}
+    if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/jpeg',.65));}catch{}
   }
   if(currentProjectId)try{localStorage.setItem('hp_'+currentProjectId,JSON.stringify({sheets:sheets.map(s=>({name:s.name,markers:s.markers})),currentSheetIdx:idx}));}catch{}
   currentSheetIdx=idx;
@@ -483,20 +478,7 @@ async function switchSheet(idx){
   const imgData=currentProjectId?await loadImg(currentProjectId,idx):null;
   if(imgData){
     const img=new Image();
-    img.onload=()=>{
-      setCanvasSize(img.width,img.height);
-      bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
-      imageLoaded=true;
-      document.getElementById('uploadHint').style.display='none';
-      // 古いピクセル座標を元画像サイズで正確に比率変換
-      markers=markers.map(m=>{
-        if(m._needsConvert||m.x>1||m.y>1){
-          return {...m,x:m.x/img.naturalWidth,y:m.y/img.naturalHeight,_needsConvert:false};
-        }
-        return m;
-      });
-      redraw();updateCounts();
-    };
+    img.onload=()=>{setCanvasSize(img.width,img.height);bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);imageLoaded=true;document.getElementById('uploadHint').style.display='none';redraw();updateCounts();};
     img.src=imgData;
   } else {
     imageLoaded=false;bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
@@ -517,78 +499,11 @@ function removeSheet(idx){
 function loadFile(e){
   const file=e.target.files[0];if(!file)return;e.target.value='';
   if(!currentProjectId){toast('先に現場を選択してください','#e94560');openProjectScreen();return;}
-  if(file.type==='application/pdf'){
-    loadPDF(file);
-  } else {
-    loadImage(file);
-  }
-}
-
-async function loadPDF(file){
-  toast('📄 PDF読み込み中...','#2980b9');
-  // PDF.jsをCDNから動的ロード
-  if(!window.pdfjsLib){
-    await new Promise((res,rej)=>{
-      const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      s.onload=()=>{
-        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        res();
-      };
-      s.onerror=rej;
-      document.head.appendChild(s);
-    });
-  }
-  const arrayBuf=await file.arrayBuffer();
-  const pdf=await pdfjsLib.getDocument({data:arrayBuf}).promise;
-  const totalPages=pdf.numPages;
-  const baseName=file.name.replace(/\.pdf$/i,'').slice(0,14);
-  toast(`📄 ${totalPages}ページ読み込み中...`,'#2980b9');
-
-  for(let pageNum=1;pageNum<=totalPages;pageNum++){
-    const page=await pdf.getPage(pageNum);
-    const viewport=page.getViewport({scale:2.0}); // 高解像度
-    const canvas=document.createElement('canvas');
-    canvas.width=viewport.width;canvas.height=viewport.height;
-    const ctx=canvas.getContext('2d');
-    await page.render({canvasContext:ctx,viewport}).promise;
-
-    // キャンバスから画像データを取得
-    const imgData=canvas.toDataURL('image/png');
-    const name=totalPages>1?`${baseName}_P${pageNum}`:baseName;
-
-    // 現在のシートを保存してから新しいシートを追加
-    if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
-      sheets[currentSheetIdx].markers=[...markers];
-      if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/png'));}catch{}
-    }
-
-    const img=new Image();
-    await new Promise(res=>{
-      img.onload=async()=>{
-        setCanvasSize(img.width,img.height);
-        bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
-        imageLoaded=true;
-        document.getElementById('uploadHint').style.display='none';
-        const ni=sheets.length;
-        sheets.push({name,markers:[]});currentSheetIdx=ni;markers=[];
-        await saveImg(currentProjectId,ni,imgData);
-        res();
-      };
-      img.src=imgData;
-    });
-  }
-
-  renderTabs();resetView();redraw();updateCounts();await saveCurrent();
-  toast(`✅ PDF ${totalPages}ページを追加しました`);
-}
-
-async function loadImage(file){
   const reader=new FileReader();
   reader.onload=async ev=>{
     if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
       sheets[currentSheetIdx].markers=[...markers];
-      if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/png'));}catch{}
+      if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/jpeg',.65));}catch{}
     }
     const img=new Image();
     img.onload=async()=>{
@@ -597,7 +512,7 @@ async function loadImage(file){
       const name=file.name.replace(/\.[^/.]+$/,'').slice(0,14);
       const ni=sheets.length;
       sheets.push({name,markers:[]});currentSheetIdx=ni;markers=[];
-      await saveImg(currentProjectId,ni,bgCanvas.toDataURL('image/png'));
+      await saveImg(currentProjectId,ni,bgCanvas.toDataURL('image/jpeg',.65));
       renderTabs();resetView();redraw();updateCounts();await saveCurrent();
       toast(`📄 ${name} を追加`);
     };
@@ -703,30 +618,8 @@ function selectDefect(type){
 let t0=null,t1=null,startDist=0,startScale=1,startX=0,startY=0,startVX=0,startVY=0;
 let tapTime=0,tapMoved=false,longTimer=null,dragIdx=null,isDrag=false;
 
-// 座標変換：クリック位置→比率（0〜1）
-function getPos(cx,cy){
-  const r=markerCanvas.getBoundingClientRect();
-  return{
-    x:(cx-r.left)*(markerCanvas.width/r.width)/markerCanvas.width,
-    y:(cy-r.top)*(markerCanvas.height/r.height)/markerCanvas.height
-  };
-}
-
-// 近傍マーカー検索（比率座標で統一）
-function nearMarker(cx,cy){
-  const r=markerCanvas.getBoundingClientRect();
-  // クリック位置を比率に変換
-  const rx=(cx-r.left)*(markerCanvas.width/r.width)/markerCanvas.width;
-  const ry=(cy-r.top)*(markerCanvas.height/r.height)/markerCanvas.height;
-  // 判定閾値も比率に変換（16px相当）
-  const thX=16/markerCanvas.width;
-  const thY=16/markerCanvas.height;
-  for(let i=markers.length-1;i>=0;i--){
-    const m=markers[i];
-    if(Math.abs(rx-m.x)<thX&&Math.abs(ry-m.y)<thY)return i;
-  }
-  return -1;
-}
+function getPos(cx,cy){const r=markerCanvas.getBoundingClientRect();return{x:(cx-r.left)*(markerCanvas.width/r.width),y:(cy-r.top)*(markerCanvas.height/r.height)};}
+function nearMarker(cx,cy){const p=getPos(cx,cy);for(let i=markers.length-1;i>=0;i--)if(Math.hypot(p.x-markers[i].x,p.y-markers[i].y)<16)return i;return -1;}
 
 markerCanvas.addEventListener('touchstart',e=>{
   e.preventDefault();tapTime=Date.now();tapMoved=false;isDrag=false;dragIdx=null;
@@ -859,17 +752,9 @@ function deleteMark(){
 }
 
 // ===== 描画 =====
-function redraw(){
-  mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);
-  markers.forEach(m=>drawM(mCtx,m,1));
-}
-
+function redraw(){mCtx.clearRect(0,0,markerCanvas.width,markerCanvas.height);markers.forEach(m=>drawM(mCtx,m,1));}
 function drawM(ctx,m,scale){
-  // 比率座標をピクセルに変換
-  const cw = scale===1 ? markerCanvas.width  : markerCanvas.width*scale;
-  const ch = scale===1 ? markerCanvas.height : markerCanvas.height*scale;
-  const x=m.x*cw, y=m.y*ch;
-  const color=DEFECTS[m.type]?.color||'#888', shape=m.shape;
+  const x=m.x*scale,y=m.y*scale,color=DEFECTS[m.type]?.color||'#888',shape=m.shape;
   const sz=(m.size||3)*scale;
   const val=m.value>0?(m.value%1===0?String(m.value):m.value.toFixed(1)):'';
   const fs=Math.max(5,sz*2);
@@ -880,14 +765,11 @@ function drawM(ctx,m,scale){
     ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
     if(val){ctx.fillStyle='white';ctx.fillText(val,x,y);}
   } else if(shape==='wave'){
-    // 文字「〜」「U〜」で表示
-    const symText=m.type==='crack03'?'U〜':'〜';
-    const symFs=fs+sz;
-    ctx.font=`bold ${symFs}px sans-serif`;
-    ctx.fillStyle=color;
-    ctx.fillText(symText,x,y);
-    ctx.font=`bold ${fs}px sans-serif`;
-    if(val){ctx.fillStyle=color;ctx.fillText(val,x,y+symFs*0.9);}
+    const ww=Math.max(sz*4,tw+sz*2),amp=sz*0.7,steps=6,sw=ww/steps,sx=x-ww/2;
+    ctx.beginPath();ctx.moveTo(sx,y);
+    for(let i=0;i<steps;i++)ctx.quadraticCurveTo(sx+sw*i+sw/2,y+(i%2===0?-amp:amp),sx+sw*(i+1),y);
+    ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,sz*0.4);ctx.lineCap='round';ctx.stroke();
+    if(val){ctx.fillStyle=color;ctx.fillText(val,x,y+amp+fs);}
   } else if(shape==='rect'){
     const rw=Math.max(sz*3,tw+sz*2),rh=fs+sz;
     ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x-rw/2,y-rh/2,rw,rh,sz*0.5);ctx.fill();
@@ -938,139 +820,14 @@ function toggleMenu(){const m=document.getElementById('dropMenu'),o=document.get
 function closeMenu(){document.getElementById('dropMenu').style.display='none';document.getElementById('menuOverlay').style.display='none';}
 
 // ===== PNG保存・印刷 =====
-function getMerged(scale=3){
+function getMerged(scale=2){
   const w=bgCanvas.width*scale,h=bgCanvas.height*scale;
   const c=document.createElement('canvas');c.width=w;c.height=h;
   const ctx=c.getContext('2d');ctx.drawImage(bgCanvas,0,0,w,h);
   const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
-  const tCtx=tmp.getContext('2d');
-  // 高解像度で比率座標からマーカーを描画
-  markers.forEach(m=>{
-    const hm={...m, x:m.x*w, y:m.y*h};
-    drawMpx(tCtx,hm,scale);
-  });
+  const tCtx=tmp.getContext('2d');markers.forEach(m=>drawM(tCtx,m,scale));
   ctx.drawImage(tmp,0,0);return c;
 }
-
-// ピクセル座標で描画（getMerged用）
-function drawMpx(ctx,m,scale){
-  const x=m.x,y=m.y;
-  const color=DEFECTS[m.type]?.color||'#888',shape=m.shape;
-  const sz=(m.size||3)*scale;
-  const val=m.value>0?(m.value%1===0?String(m.value):m.value.toFixed(1)):'';
-  const fs=Math.max(5,sz*2);
-  ctx.save();ctx.font=`bold ${fs}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-  const tw=val?ctx.measureText(val).width:0;
-  if(shape==='circle'){
-    const r=Math.max(sz*1.5,tw/2+sz);
-    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
-    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y);}
-  } else if(shape==='wave'){
-    // 文字「〜」「U〜」で表示
-    const symText=m.type==='crack03'?'U〜':'〜';
-    const symFs=fs+sz;
-    ctx.font=`bold ${symFs}px sans-serif`;
-    ctx.fillStyle=color;
-    ctx.fillText(symText,x,y);
-    ctx.font=`bold ${fs}px sans-serif`;
-    if(val){ctx.fillStyle=color;ctx.fillText(val,x,y+symFs*0.9);}
-  } else if(shape==='rect'){
-    const rw=Math.max(sz*3,tw+sz*2),rh=fs+sz;
-    ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x-rw/2,y-rh/2,rw,rh,sz*0.5);ctx.fill();
-    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y);}
-  } else if(shape==='triangle'){
-    const tr=Math.max(sz*2,tw/2+sz*1.5),th=tr*1.8;
-    ctx.beginPath();ctx.moveTo(x,y-th*.6);ctx.lineTo(x+tr,y+th*.4);ctx.lineTo(x-tr,y+th*.4);ctx.closePath();
-    ctx.fillStyle=color;ctx.fill();
-    if(val){ctx.fillStyle='white';ctx.fillText(val,x,y+th*.08);}
-  }
-  ctx.restore();
-}
-// ===== 共有機能（Web Share API）=====
-async function sharePNG(){
-  if(!imageLoaded){toast('図面を読み込んでください','#e94560');return;}
-  const fname=getFName('png');
-  try{
-    const blob=await new Promise(r=>getMerged().toBlob(r,'image/png'));
-    const file=new File([blob],fname,{type:'image/png'});
-    if(navigator.share&&navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:fname,text:'補修図面'});
-    } else {
-      // Web Share API非対応→PNG保存にフォールバック
-      savePNG();
-      toast('共有非対応のため保存しました。ファイルアプリから共有してください。','#e67e22');
-    }
-  }catch(e){
-    if(e.name!=='AbortError') toast('共有に失敗しました','#e94560');
-  }
-}
-
-async function shareReportPNG(){
-  const proj=loadProjs().find(p=>p.id===currentProjectId);
-  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  const fname=`${safe(proj?.name||'補修図面')}_レポート.png`;
-  try{
-    const blob=await new Promise(r=>buildRepCanvas().toBlob(r,'image/png'));
-    const file=new File([blob],fname,{type:'image/png'});
-    if(navigator.share&&navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:fname,text:'補修調査レポート'});
-    } else {
-      saveReportPNG();
-      toast('共有非対応のため保存しました','#e67e22');
-    }
-  }catch(e){
-    if(e.name!=='AbortError') toast('共有に失敗しました','#e94560');
-  }
-}
-
-async function shareAll(){
-  if(!currentProjectId){toast('現場を選択してください','#e94560');return;}
-  await saveCurrent();
-  const proj=loadProjs().find(p=>p.id===currentProjectId);
-  const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  const projName=proj?.name||'補修図面';
-  toast('📤 共有データを準備中...');
-
-  const files=[];
-
-  // 図面PNG（現在の図面）
-  if(imageLoaded){
-    const pngBlob=await new Promise(r=>getMerged().toBlob(r,'image/png'));
-    files.push(new File([pngBlob],getFName('png'),{type:'image/png'}));
-  }
-
-  // レポートPNG
-  const repBlob=await new Promise(r=>buildRepCanvas().toBlob(r,'image/png'));
-  files.push(new File([repBlob],`${safe(projName)}_レポート.png`,{type:'image/png'}));
-
-  // JSONバックアップ
-  const data=loadPD(currentProjectId)||{sheets:[],currentSheetIdx:-1};
-  const withImg=await Promise.all(data.sheets.map(async(s,i)=>({
-    name:s.name,markers:s.markers||[],
-    imageData:await loadImg(currentProjectId,i)||null
-  })));
-  const backup={version:1,projectName:projName,date:new Date().toISOString(),sheets:withImg,currentSheetIdx:data.currentSheetIdx};
-  const jsonBlob=new Blob([JSON.stringify(backup)],{type:'application/json'});
-  files.push(new File([jsonBlob],`${safe(projName)}_backup.json`,{type:'application/json'}));
-
-  try{
-    if(navigator.share&&navigator.canShare({files})){
-      await navigator.share({
-        files,
-        title:`${projName} 補修調査データ`,
-        text:`${projName} の補修調査データです（図面・レポート・バックアップ）`
-      });
-    } else {
-      // フォールバック：個別に保存
-      toast('一括共有非対応のため個別に保存します','#e67e22');
-      if(imageLoaded)savePNG();
-      saveReportPNG();
-    }
-  }catch(e){
-    if(e.name!=='AbortError') toast('共有に失敗しました','#e94560');
-  }
-}
-
 function getFName(ext){
   const ps=loadProjs();const p=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
   const pn=p?.name||'補修図面';const sn=sheets[currentSheetIdx]?.name||'図面';
@@ -1089,12 +846,12 @@ function printDrawing(){
   const old=document.getElementById('printOverlay');if(old)old.remove();
   const overlay=document.createElement('div');overlay.id='printOverlay';
   overlay.style.cssText='position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;';
-  const tb=document.createElement('div');tb.style.cssText='padding:10px 14px;background:#f8f8f8;border-bottom:2px solid #1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;';
-  const closeBtn=document.createElement('button');closeBtn.textContent='✕ 閉じる';closeBtn.style.cssText='padding:8px 12px;background:#ddd;color:#1a1a2e;border:none;border-radius:8px;font-size:13px;cursor:pointer;';
+  const tb=document.createElement('div');tb.style.cssText='padding:10px 14px;background:#1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;';
+  const closeBtn=document.createElement('button');closeBtn.textContent='✕ 閉じる';closeBtn.style.cssText='padding:8px 12px;background:#444;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;';
   closeBtn.onclick=()=>{overlay.remove();if(currentProjectId)loadImg(currentProjectId,currentSheetIdx).then(d=>{if(d){const img=new Image();img.onload=()=>{setCanvasSize(img.width,img.height);bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);imageLoaded=true;redraw();};img.src=d;}});};
   const dl=document.createElement('a');dl.href=url;dl.download=getFName('png');dl.textContent='⬇️ PNG保存';dl.style.cssText='padding:8px 14px;background:#27ae60;color:white;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;';
-  const hint=document.createElement('div');hint.style.cssText='width:100%;color:#888;font-size:11px;padding-top:4px;';hint.textContent='📌 PNG保存 → 写真アプリ → 共有（□↑）→「プリント」';
-  const title=document.createElement('span');title.style.cssText='color:#1a1a2e;font-size:13px;font-weight:700;flex:1;';title.textContent='補修図面';
+  const hint=document.createElement('div');hint.style.cssText='width:100%;color:#aaa;font-size:11px;padding-top:4px;';hint.textContent='📌 PNG保存 → 写真アプリ → 共有（□↑）→「プリント」';
+  const title=document.createElement('span');title.style.cssText='color:white;font-size:13px;font-weight:700;flex:1;';title.textContent='補修図面';
   tb.appendChild(title);tb.appendChild(dl);tb.appendChild(closeBtn);tb.appendChild(hint);
   const img=document.createElement('img');img.src=url;img.style.cssText='width:100%;height:auto;display:block;';
   overlay.appendChild(tb);overlay.appendChild(img);document.body.appendChild(overlay);
@@ -1122,31 +879,7 @@ async function restoreProject(e){
       const backup=JSON.parse(ev.target.result);if(!backup.sheets){toast('⚠️ 無効なファイルです','#e94560');return;}
       const id='p'+Date.now(),name=backup.projectName||'復元データ';
       const ps=loadProjs();ps.unshift({id,name,date:new Date().toLocaleDateString('ja-JP')});saveProjs(ps);
-
-      // 各シートの画像サイズを取得してピクセル座標→比率に正確に変換
-      const convertedSheets=await Promise.all(backup.sheets.map(async(s,i)=>{
-        const imgData=s.imageData||null;
-        let imgW=1,imgH=1;
-        if(imgData){
-          // 画像の元サイズを取得
-          await new Promise(r=>{
-            const img=new Image();
-            img.onload=()=>{imgW=img.naturalWidth;imgH=img.naturalHeight;r();};
-            img.onerror=r;
-            img.src=imgData;
-          });
-        }
-        const convertedMarkers=(s.markers||[]).map(m=>{
-          if(m.x>1||m.y>1){
-            // ピクセル座標→比率に変換（元画像サイズ基準）
-            return {...m,x:m.x/imgW,y:m.y/imgH,_needsConvert:false};
-          }
-          return m;
-        });
-        return {name:s.name,markers:convertedMarkers};
-      }));
-
-      localStorage.setItem('hp_'+id,JSON.stringify({sheets:convertedSheets,currentSheetIdx:backup.currentSheetIdx||0}));
+      localStorage.setItem('hp_'+id,JSON.stringify({sheets:backup.sheets.map(s=>({name:s.name,markers:s.markers||[]})),currentSheetIdx:backup.currentSheetIdx||0}));
       for(let i=0;i<backup.sheets.length;i++)if(backup.sheets[i].imageData)await saveImg(id,i,backup.sheets[i].imageData);
       toast(`✅ 「${name}」を復元しました`);await openProject(id);renderProjList();
     }catch{toast('⚠️ 読み込みに失敗しました','#e94560');}
@@ -1240,13 +973,13 @@ function printReport(){
   const old=document.getElementById('printOverlay');if(old)old.remove();
   const overlay=document.createElement('div');overlay.id='printOverlay';
   overlay.style.cssText='position:fixed;inset:0;background:white;z-index:9999;display:flex;flex-direction:column;overflow-y:auto;';
-  const tb=document.createElement('div');tb.style.cssText='padding:10px 14px;background:#f8f8f8;border-bottom:2px solid #1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;position:sticky;top:0;z-index:1;';
+  const tb=document.createElement('div');tb.style.cssText='padding:10px 14px;background:#1a1a2e;display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;position:sticky;top:0;z-index:1;';
   const ps=loadProjs();const p=currentProjectId?ps.find(p=>p.id===currentProjectId):null;
   const safe=s=>s.replace(/[\/\\:*?"<>|]/g,'_');
-  const closeBtn=document.createElement('button');closeBtn.textContent='✕ 閉じる';closeBtn.style.cssText='padding:8px 12px;background:#ddd;color:#1a1a2e;border:none;border-radius:8px;font-size:13px;cursor:pointer;';closeBtn.onclick=()=>overlay.remove();
+  const closeBtn=document.createElement('button');closeBtn.textContent='✕ 閉じる';closeBtn.style.cssText='padding:8px 12px;background:#444;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;';closeBtn.onclick=()=>overlay.remove();
   const dl=document.createElement('a');dl.href=url;dl.download=`${safe(p?.name||'補修図面')}_レポート.png`;dl.textContent='⬇️ PNG保存';dl.style.cssText='padding:8px 14px;background:#27ae60;color:white;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;';
-  const hint=document.createElement('div');hint.style.cssText='width:100%;color:#888;font-size:11px;padding-top:4px;';hint.textContent='📌 PNG保存 → 写真アプリ → 共有（□↑）→「プリント」';
-  const title=document.createElement('span');title.style.cssText='color:#1a1a2e;font-size:13px;font-weight:700;flex:1;';title.textContent='レポート印刷';
+  const hint=document.createElement('div');hint.style.cssText='width:100%;color:#aaa;font-size:11px;padding-top:4px;';hint.textContent='📌 PNG保存 → 写真アプリ → 共有（□↑）→「プリント」';
+  const title=document.createElement('span');title.style.cssText='color:white;font-size:13px;font-weight:700;flex:1;';title.textContent='レポート印刷';
   tb.appendChild(title);tb.appendChild(dl);tb.appendChild(closeBtn);tb.appendChild(hint);
   const img=document.createElement('img');img.src=url;img.style.cssText='width:100%;height:auto;display:block;';
   overlay.appendChild(tb);overlay.appendChild(img);document.body.appendChild(overlay);
@@ -1280,7 +1013,7 @@ async function saveReportExcel(){
   rows.push(`<row r="3" ht="10" customHeight="1"></row>`);
   rows.push(`<row r="4" ht="28" customHeight="1"><c r="A4" t="s" s="1"><v>${si('■ 補修数量 集計表')}</v></c></row>`);
   rows.push(`<row r="5" ht="26" customHeight="1"><c r="A5" t="s" s="4"><v>${si('No.')}</v></c><c r="B5" t="s" s="4"><v>${si('補修種別')}</v></c><c r="C5" t="s" s="4"><v>${si('記号')}</v></c><c r="D5" t="s" s="4"><v>${si('単位')}</v></c><c r="E5" t="s" s="4"><v>${si('数量')}</v></c><c r="F5" t="s" s="4"><v>${si('備考')}</v></c></row>`);
-  const dl=[{key:'crack',label:'クラック',sym:'〜',unit:'m'},{key:'crack03',label:'クラック0.3↑',sym:'U〜',unit:'m'},{key:'peel',label:'剥離・浮き',sym:'⭕',unit:'㎡'},{key:'inject',label:'浮き注入',sym:'⬜',unit:'穴'},{key:'burst',label:'欠損・爆裂',sym:'△',unit:'箇所'},{key:'float',label:'タイル浮き',sym:'⬜',unit:'㎡'},{key:'tile',label:'タイル貼替',sym:'⬜',unit:'枚'},{key:'other',label:'その他',sym:'⭕',unit:'箇所'}];
+  const dl=[{key:'crack',label:'ひび割れ',sym:'〰',unit:'m'},{key:'crack03',label:'ひび割れ(0.3↑)',sym:'〰',unit:'m'},{key:'peel',label:'剥離・浮き',sym:'⭕',unit:'㎡'},{key:'inject',label:'浮き注入',sym:'⬜',unit:'穴'},{key:'burst',label:'欠損・爆裂',sym:'△',unit:'箇所'},{key:'float',label:'タイル浮き',sym:'⬜',unit:'㎡'},{key:'tile',label:'タイル貼替',sym:'⬜',unit:'枚'},{key:'other',label:'その他',sym:'⭕',unit:'箇所'}];
   dl.forEach((d,i)=>{
     const rn=6+i;const s=allStats[d.key]||{total:0,count:0};const val=s.total>0?(s.total%1===0?s.total:parseFloat(s.total.toFixed(2))):s.count;const st=i%2===0?5:6;
     rows.push(`<row r="${rn}" ht="24" customHeight="1"><c r="A${rn}" t="n" s="7"><v>${i+1}</v></c><c r="B${rn}" t="s" s="${st}"><v>${si(d.label)}</v></c><c r="C${rn}" t="s" s="${st}"><v>${si(d.sym)}</v></c><c r="D${rn}" t="s" s="${st}"><v>${si(d.unit)}</v></c><c r="E${rn}" t="n" s="8"><v>${val||0}</v></c><c r="F${rn}" t="s" s="${st}"><v>${si(s.count+'マーカー')}</v></c></row>`);
