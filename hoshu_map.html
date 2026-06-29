@@ -547,7 +547,7 @@ async function loadPDF(file){
 
   for(let pageNum=1;pageNum<=totalPages;pageNum++){
     const page=await pdf.getPage(pageNum);
-    const viewport=page.getViewport({scale:2.0}); // 高解像度
+    const viewport=page.getViewport({scale:3.0}); // 高解像度
     const canvas=document.createElement('canvas');
     canvas.width=viewport.width;canvas.height=viewport.height;
     const ctx=canvas.getContext('2d');
