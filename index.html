@@ -425,6 +425,12 @@ async function openProject(id){
   const idx=data.currentSheetIdx>=0?data.currentSheetIdx:(sheets.length>0?0:-1);
   if(sheets.length&&idx>=0)await switchSheet(idx);
   else{document.getElementById('uploadHint').style.display='flex';renderTabs();updateCounts();}
+  // PDF変換ツールからのインポートがあれば実行
+  if(window._pendingPdfImport){
+    const payload=window._pendingPdfImport;
+    window._pendingPdfImport=null;
+    setTimeout(()=>importPdfPages(payload),500);
+  }
 }
 async function openProjectScreen(){
   await saveCurrent();renderProjList();
@@ -522,6 +528,34 @@ function loadFile(e){
   } else {
     loadImage(file);
   }
+}
+
+// PDF変換ツールからページを一括インポート
+async function importPdfPages(payload){
+  if(!currentProjectId){toast('現場を選択してください','#e94560');return;}
+  toast(`📄 ${payload.pages.length}ページを追加中...`,'#2980b9');
+  for(const page of payload.pages){
+    await new Promise(res=>{
+      const img=new Image();
+      img.onload=async()=>{
+        if(currentSheetIdx>=0&&sheets[currentSheetIdx]){
+          sheets[currentSheetIdx].markers=[...markers];
+          if(imageLoaded&&currentProjectId)try{await saveImg(currentProjectId,currentSheetIdx,bgCanvas.toDataURL('image/png'));}catch{}
+        }
+        setCanvasSize(img.width,img.height);
+        bgCtx.drawImage(img,0,0,bgCanvas.width,bgCanvas.height);
+        imageLoaded=true;document.getElementById('uploadHint').style.display='none';
+        const ni=sheets.length;
+        const name=page.name.replace(/\.[^/.]+$/,'').slice(0,16);
+        sheets.push({name,markers:[]});currentSheetIdx=ni;markers=[];
+        await saveImg(currentProjectId,ni,page.dataUrl);
+        res();
+      };
+      img.src=page.dataUrl;
+    });
+  }
+  renderTabs();resetView();redraw();updateCounts();await saveCurrent();
+  toast(`✅ ${payload.pages.length}ページを追加しました！`);
 }
 
 async function loadPDF(file){
@@ -1374,7 +1408,27 @@ function inputModal(title,defaultVal,onOk){
 }
 
 // ===== 起動 =====
-window.addEventListener('load',()=>{renderProjList();document.getElementById('projectScreen').style.display='flex';});
+window.addEventListener('load',()=>{
+  renderProjList();
+  document.getElementById('projectScreen').style.display='flex';
+  // PDF変換ツールからのデータを受け取る
+  const urlParams=new URLSearchParams(window.location.search);
+  if(urlParams.get('from')==='pdf'){
+    const raw=localStorage.getItem('hoshu_pdf_import');
+    if(raw){
+      try{
+        const payload=JSON.parse(raw);
+        localStorage.removeItem('hoshu_pdf_import');
+        // 少し待ってから現場選択を促す
+        setTimeout(()=>{
+          showToast(`📄 ${payload.pages.length}ページのPDFを読み込み中...`,'#2980b9');
+          window._pendingPdfImport=payload;
+          // 現場が選択されたら自動で読み込む
+        },500);
+      }catch{}
+    }
+  }
+});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){cancelMark();closeReport();closeAllDrawers();}
   if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undoLast();}
